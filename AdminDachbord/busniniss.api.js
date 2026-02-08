@@ -7,6 +7,7 @@ import multer from "multer";
 import slugify from "slugify";
 import Subscription from "../modelus/Subscription.js";
 import Paymant from "../modelus/Paymant.js";
+import Plans from "../modelus/Plans.js";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -64,6 +65,7 @@ export const registerBussnise = async (req, res) => {
   try {
     const { name, type, contact, plan } = req.body;
     const image = req.file ? req.file.filename : null;
+    const findPlan = await Plans.findById(plan)
     if (!req.file) {
       return res.status(400).json({
         message: "Receipt image is required",
@@ -91,7 +93,7 @@ export const registerBussnise = async (req, res) => {
       planId: plan,
       startDate,
       endDate,
-      paidAmount: 0,
+      paidAmount: plan.price,
       status: "pending",
     });
     console.log("Before saving subscription:", newSubscription);

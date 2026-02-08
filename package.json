@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
+    "dev": "node server.js",
     "migrate-passwords": "node migrate-passwords.js"
   },
   "keywords": [],
