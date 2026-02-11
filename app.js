@@ -13,6 +13,7 @@ import LoginApi from './auth.js';
 import Dachbordapi from './AdminDachbord/busniniss.api.js';
 import TypesApi from './AdminDachbord/types.api.js';
 import CategoryApi from './AdminDachbord/category.api.js';
+import UsersApi from './AdminDachbord/Users.api.js';
 import bussninsProductApi from './AdminDachbord/Product.api.js';
 import mangeBussnine from './subAdminDachboard/bussninsMangment.js';
 import ownerApi from './subAdminDachboard/owner.js';
@@ -30,6 +31,7 @@ app.use("/owner",ownerApi);
 app.use("/plans",plansApi);
 app.use("/subscription",subscApi);
 app.use("/paymantes",paymantsApi);
+app.use("/users",UsersApi)
 app.use('/uploads', express.static('uploads'));
 
 export default app;
