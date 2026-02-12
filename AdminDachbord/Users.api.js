@@ -20,7 +20,7 @@ const updateUserInforamtion = async (req, res) => {
       { $set: updateData },
       { new: true },
     );
-    console.log("updateData")
+    console.log(updateUser)
     
     res.json("Saved Updated")
   } catch (error) {
