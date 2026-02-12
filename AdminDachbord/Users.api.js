@@ -21,7 +21,7 @@ const updateUserInforamtion = async (req, res) => {
       { new: true },
     );
     console.log("updateData")
-    console.log(updateUser)
+    
     res.json("Saved Updated")
   } catch (error) {
     res.status(500).json(error)
