@@ -12,7 +12,6 @@ const getUserById = async (req, res) => {
   }
 };
 const updateUserInforamtion = async (req, res) => {
-    console.log(req.body)
   try {
     const updateData = req.body;
     const updateUser = await Users.findByIdAndUpdate(
@@ -20,8 +19,6 @@ const updateUserInforamtion = async (req, res) => {
       { $set: updateData },
       { new: true },
     );
-    console.log(updateUser)
-    
     res.json("Saved Updated")
   } catch (error) {
     res.status(500).json(error)

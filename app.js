@@ -20,6 +20,7 @@ import ownerApi from './subAdminDachboard/owner.js';
 import plansApi from './subAdminDachboard/plans.js';
 import subscApi from './subAdminDachboard/subscription.js'
 import paymantsApi from './subAdminDachboard/Paymanet.js'
+import paymanUsertApi from './AdminDachbord/Payment.api.js'
 app.use("/auth",LoginApi)
 app.use("/dachboard",Dachbordapi)
 app.use("/products",productApi)
@@ -32,6 +33,7 @@ app.use("/plans",plansApi);
 app.use("/subscription",subscApi);
 app.use("/paymantes",paymantsApi);
 app.use("/users",UsersApi)
+app.use("/payment",paymanUsertApi)
 app.use('/uploads', express.static('uploads'));
 
 export default app;
