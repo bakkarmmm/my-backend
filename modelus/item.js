@@ -32,6 +32,11 @@ const itemSchema = new mongoose.Schema(
       type: Boolean,
       required:true,
       default:true,
+    },
+    avalible:{
+      type: Boolean,
+      required:true,
+      default:true,
     }
   },
   { timestamps: true }

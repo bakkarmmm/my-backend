@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 // Replace 'your_database_name' with your actual database name
 const mongoURI = "mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/Catalog?retryWrites=true&w=majority&appName=Catalog";
 
-
 async function connectDB() {
   try {
     await mongoose.connect(mongoURI);

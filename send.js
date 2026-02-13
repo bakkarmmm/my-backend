@@ -7,11 +7,42 @@ import Item from "./modelus/item.js";
 import Paymant from "./modelus/Paymant.js";
 import Users from "./modelus/Users.js";
 import Category from "./modelus/Category.js";
+import Busninss from "./modelus/Busninss.js";
 
-await mongoose.connect("mongodb://localhost:27017/Catalog");
-const data = await LocalModel.find();
-await mongoose.connect("mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/?appName=Catalog")
-await OnlineModel.insertMany(data);
+// await mongoose.connect("mongodb://localhost:27017/Catalog");
+// const data = await LocalModel.find();
+// await mongoose.connect("mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/?appName=Catalog")
+const mongoURI = "mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/Catalog?retryWrites=true&w=majority&appName=Catalog";
+
+async function connectDB() {
+  try {
+    await mongoose.connect(mongoURI);
+    console.log("MongoDB connected successfully!");
+    console.log("Connected to DB:", mongoose.connection.name);
+    // Handle connection events
+    mongoose.connection.on('error', (err) => {
+      console.error("MongoDB connection error:", err);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log("MongoDB disconnected");
+    });
+    
+    // Handle app termination
+    process.on('SIGINT', async () => {
+      await mongoose.connection.close();
+      console.log("MongoDB connection closed due to app termination");
+      process.exit(0);
+    });
+    
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    process.exit(1); // Exit process if connection fails
+  }
+}
+
+connectDB();
+// await OnlineModel.insertMany(data);
 // Business Type
 // const types = await type.create({
 //   name: "caffeShop",
@@ -55,10 +86,13 @@ await OnlineModel.insertMany(data);
 // const addRatingToOldBussnises = async () => {
 //   await mongoose.connect("mongodb://localhost:27017/Catalog");// عدل اسم DB
 
-  // const result = await Paymant.updateMany(
-  //   { type: { $exists: false }}, // فقط المستندات التي لا تحتوي rating
-  //   { $set: { type: "NEW" } }         // أضف الحقل بالقيمة الافتراضية
-  // );
+  const result = await Busninss.updateMany(
+    { }, // فقط المستندات التي لا تحتوي rating
+    { $set: {
+          openTime: "09:00",  // الوقت الافتراضي اللي بدك
+          closeTime: "18:00",
+        },}         // أضف الحقل بالقيمة الافتراضية
+  );
   // const update = await Bussnise.updateMany(
   //   {}, // فقط المستندات التي لا تحتوي rating
   //   { $unset: { isActive: "" } }         // أضف الحقل بالقيمة الافتراضية
@@ -77,6 +111,7 @@ await OnlineModel.insertMany(data);
 //   mongoose.disconnect();
 // };
 // addRatingToOldBussnises();
-
+console.log(result)
 console.log("Seed data inserted");
+
 process.exit();

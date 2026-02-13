@@ -129,7 +129,28 @@ export const updateStatus = async(req,res)=>{
     res.status(400).json({err:error})
   }
 }
+export const updateAvaliblte = async(req,res)=>{
+  const id = req.params.id;
+  try {
+    if (!id) {
+      res.status(404).json("ID Product not found");
+    }
+    const { status } = req.body;
+    console.log(status,id)
+    if(status !== undefined){
+      const update = await Item.findByIdAndUpdate(
+        id,
+        { $set: {avalible:status}},
+        { new: true }
+      );
+      return res.json("accepdate update",status)
+    }
+  } catch (error) {
+    res.status(400).json({err:error})
+  }
+}
 router.put("/update-status/:id", protect, updateStatus);
+router.put("/update-available/:id", protect, updateAvaliblte);
 router.put("/update/:id", protect,upload.single("image"), update);
 router.delete("/delete/:id", protect, deleteProduct);
 router.post("/newProducts", protect, upload.single("image"), inserProudcts);

@@ -45,6 +45,8 @@ const bussnisSchema = new mongoose.Schema(
         default:"#00A63E",
       },
     },
+    openTime: { type: String, default: "09:00" },   
+  closeTime: { type: String, default: "18:00" }, 
   },
   { timestamps: true }
 );
