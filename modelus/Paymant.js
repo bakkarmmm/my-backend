@@ -30,6 +30,10 @@ const PaymantsSchema = new mongoose.Schema(
       enum: ["NEW", "RENEW"],
       default: "NEW",
     },
+     amount:{
+            type:Number,
+            required: true,
+        },
   },
   { timestamps: true },
 );

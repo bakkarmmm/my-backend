@@ -10,7 +10,7 @@ const router = express.Router();
 export const getPaymanets = async (req, res) => {
   try {
     const all = await Paymant.find()
-      .select("status createdAt receiptImage type")
+      .select("status createdAt receiptImage type amount")
       .populate({
         path: "bussninsId",
         select: "name",
@@ -19,7 +19,7 @@ export const getPaymanets = async (req, res) => {
         path: "subsId",
         select: "paidAmount",
         populate: { path: "planId", select: "name" },
-      });
+      }).populate({path:"requestedPlanId",select:"name price"});
     res.json(all);
     console.log(all);
   } catch (error) {

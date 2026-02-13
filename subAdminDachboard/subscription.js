@@ -64,6 +64,7 @@ export const revuveSubsc = async (req, res) => {
     if (!PlanId || !busId || !receiptImage) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+   
     console.log("OK")
     const findPlan = await Plans.findById(PlanId);
     const newPaymant = new paymant({
@@ -73,6 +74,7 @@ export const revuveSubsc = async (req, res) => {
       requestedPlanId:PlanId,
       status: "PENDING",
       type: "RENEW",
+      amount:findPlan.price,
     });
     console.log("OK5")
     await newPaymant.save();
