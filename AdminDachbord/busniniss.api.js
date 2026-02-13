@@ -35,7 +35,7 @@ export const getMyBussnises = async (req, res) => {
 
 export const updateMyBussnise = async (req, res) => {
   try {
-    const { name, type, disc, contact, address } = req.body;
+    const { name, type, disc, contact, address ,openTime,closedTime} = req.body;
     //console.log(req.body)
     const updated = await Bussnise.findOneAndUpdate(
       { bussnisOwner: req.user.id }, // 🔐 صاحب البزنس
@@ -45,6 +45,8 @@ export const updateMyBussnise = async (req, res) => {
         disc,
         contact,
         address,
+        openTime:openTime,
+        closeTime:closedTime
       },
       { new: true },
     );
