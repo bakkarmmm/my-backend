@@ -4,11 +4,20 @@ import Category from "./modelus/Category.js";
 import Busninss from "./modelus/Busninss.js";
 const router = express.Router();
 
-
+router.get("/item/:id",async(req,res)=>{
+  const { id } = req.params;
+  try {
+     const item = await Item.findById(id).populate({ path: "gategoryID", select: "name" });
+    if (!item) return res.status(404).json({ message: "Item not found" });
+    res.json(item);
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
 router.get("/:resturantSlug", async (req, res) => {
   const { resturantSlug } = req.params;
   try {
-    const items = await Item.find({ ResturantSlug: resturantSlug });
+    const items = await Item.find({ ResturantSlug: resturantSlug }).populate({path:"gategoryID",select:"name"});
     const categoriesIds = await Item.find({
       ResturantSlug: resturantSlug,
     }).distinct("gategoryID"); // يرجع array من ObjectId
@@ -16,7 +25,7 @@ router.get("/:resturantSlug", async (req, res) => {
     const categories = await Category.find({ _id: { $in: categoriesIds } });
     const bussnise = await Busninss.find({slug:resturantSlug})
     res.json({
-      menu: items,
+      menu: items, 
       categris: categories,
       RestaurantNames: restaurantName,
       bussnise : bussnise
