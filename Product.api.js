@@ -20,10 +20,10 @@ router.get("/:resturantSlug", async (req, res) => {
     const items = await Item.find({ ResturantSlug: resturantSlug }).populate({path:"gategoryID",select:"name"});
     const categoriesIds = await Item.find({
       ResturantSlug: resturantSlug,
-    }).distinct("gategoryID"); // يرجع array من ObjectId
+    }).distinct("gategoryID");
     const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
     const categories = await Category.find({ _id: { $in: categoriesIds } });
-    const bussnise = await Busninss.find({slug:resturantSlug})
+    const bussnise = await Busninss.find({slug:resturantSlug}).populate({path:"type",select:"name"});
     res.json({
       menu: items, 
       categris: categories,
