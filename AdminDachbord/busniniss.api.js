@@ -35,10 +35,9 @@ export const getMyBussnises = async (req, res) => {
 
 export const updateMyBussnise = async (req, res) => {
   try {
-    const { name, type, disc, contact, address,color ,openTime,closedTime} = req.body;
-    //console.log(req.body)
+    const { name, type, disc, contact, address,color ,openTime,closedTime,logoImage,coverImage} = req.body;
     const updated = await Bussnise.findOneAndUpdate(
-      { bussnisOwner: req.user.id }, // 🔐 صاحب البزنس
+      { bussnisOwner: req.user.id }, 
       {
         name,
         type,
@@ -47,7 +46,9 @@ export const updateMyBussnise = async (req, res) => {
         address,
         theme: color,
         openTime:openTime,
-        closeTime:closedTime
+        closeTime:closedTime,
+        coverImage,
+        logoImage
       },
       { new: true },
     );
