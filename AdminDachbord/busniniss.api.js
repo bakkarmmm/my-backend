@@ -48,7 +48,8 @@ export const updateMyBussnise = async (req, res) => {
         openTime:openTime,
         closeTime:closedTime,
         coverImage,
-        logoImage
+        logoImage,
+        slug:slugify(name, { lower: true })
       },
       { new: true },
     );
