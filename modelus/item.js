@@ -37,6 +37,9 @@ const itemSchema = new mongoose.Schema(
       type: Boolean,
       required:true,
       default:true,
+    },
+    public_id:{
+      type:String
     }
   },
   { timestamps: true }
