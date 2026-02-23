@@ -3,7 +3,9 @@ import Item from "../modelus/item.js";
 import Busninss from "../modelus/Busninss.js";
 import { protect } from "../midlware/auth.js";
 import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
 import multer from "multer";
+
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -69,11 +71,14 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ messaage: "item not found" });
     }
 
-    // ⭐ حذف الصورة من Cloudinary
     if (item.public_id) {
-      await cloudinary.uploader.destroy(item.public_id);
+      try {
+        const resu = await cloudinary.uploader.destroy(item.public_id);
+        console.log(resu);
+      } catch (error) {
+        console.error("Cloudinary delete error:", err);
+      }
     }
-
     await Item.findByIdAndDelete(id);
 
     res.json("succufully delete this products");
