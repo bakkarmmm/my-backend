@@ -21,10 +21,12 @@ import plansApi from './subAdminDachboard/plans.js';
 import subscApi from './subAdminDachboard/subscription.js'
 import paymantsApi from './subAdminDachboard/Paymanet.js'
 import paymanUsertApi from './AdminDachbord/Payment.api.js'
+import PromoApi from './AdminDachbord/Promo.api.js';
 app.use("/auth",LoginApi)
 app.use("/dachboard",Dachbordapi)
 app.use("/products",productApi)
 app.use("/types",TypesApi)
+app.use("/Promo",PromoApi);
 app.use("/categories",CategoryApi)
 app.use("/productsbussnins",bussninsProductApi)
 app.use("/mangmentBussnies",mangeBussnine)
