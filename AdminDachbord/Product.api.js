@@ -74,7 +74,7 @@ export const deleteProduct = async (req, res) => {
     if (item.public_id) {
       try {
         const resu = await cloudinary.uploader.destroy(item.public_id);
-        console.log(resu);
+        // console.log(resu);
       } catch (error) {
         console.error("Cloudinary delete error:", err);
       }

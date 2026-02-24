@@ -32,7 +32,6 @@ export const insertCategorie = async (req,res)=>{
     if (!bussnise) {
       return res.status(404).json({ message: "Business not found" });
     }
-
     const newCategorie = Category.create({name,bussninsId:bussnise._id})
     res.status(200).json("insert succuffully");
   } catch (error) {

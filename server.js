@@ -7,7 +7,7 @@ cloudinary.config({
   api_key: process.env.CLOUD_API_KEY ,
   api_secret: process.env.CLOUD_API_SECRET ,
 });
-console.log(process.env.JWT_SECRET);
+// console.log(process.env.JWT_SECRET);
 app.listen(3000, () => {
   console.log("server running on port 3000");  
 });
