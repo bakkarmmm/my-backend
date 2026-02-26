@@ -2,6 +2,7 @@ import express from "express";
 import Item from "./modelus/item.js";
 import Category from "./modelus/Category.js";
 import Busninss from "./modelus/Busninss.js";
+import Promo from "./modelus/Promo.js";
 const router = express.Router();
 
 router.get("/item/:id", async (req, res) => {
@@ -10,7 +11,7 @@ router.get("/item/:id", async (req, res) => {
     const item = await Item.findById(id).populate({
       path: "gategoryID",
       select: "name",
-    });
+    }).populate({path:"bussnins_id",select:"contact theme"});
     if (!item) return res.status(404).json({ message: "Item not found" });
     res.json(item);
   } catch (error) {
@@ -25,6 +26,7 @@ router.get("/:resturantSlug", async (req, res) => {
       path: "gategoryID",
       select: "name",
     });
+    const Promos = await Promo.find({ bussninsId: resturant._id });
     const categoriesIds = await Item.find({
       bussnins_id: resturant._id,
     }).distinct("gategoryID");
@@ -39,6 +41,7 @@ router.get("/:resturantSlug", async (req, res) => {
       categris: categories,
       RestaurantNames: restaurantName,
       bussnise: bussnise,
+      Promos:Promos
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
