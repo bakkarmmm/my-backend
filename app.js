@@ -5,11 +5,7 @@ app.use(cors());
 app.use(express.json());
 
 import productApi from "./Product.api.js";
-// app.use("/",productApi);
-// import gategoryApi from "./Gategory.api.js"
-// app.use('/',gategoryApi)
 import LoginApi from './auth.js';
-
 import Dachbordapi from './AdminDachbord/busniniss.api.js';
 import TypesApi from './AdminDachbord/types.api.js';
 import CategoryApi from './AdminDachbord/category.api.js';
@@ -22,6 +18,8 @@ import subscApi from './subAdminDachboard/subscription.js'
 import paymantsApi from './subAdminDachboard/Paymanet.js'
 import paymanUsertApi from './AdminDachbord/Payment.api.js'
 import PromoApi from './AdminDachbord/Promo.api.js';
+import { expireSubscriptionsJob } from "./utils/cronJobs.js";
+expireSubscriptionsJob();
 app.use("/auth",LoginApi)
 app.use("/dachboard",Dachbordapi)
 app.use("/products",productApi)

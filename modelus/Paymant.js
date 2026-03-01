@@ -8,7 +8,6 @@ const PaymantsSchema = new mongoose.Schema(
     subsId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscription",
-
       index: true,
     },
     receiptImage: {

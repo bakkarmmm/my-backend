@@ -2,12 +2,15 @@
 import jwt from "jsonwebtoken";
 
 export const protect = (req, res, next) => {
-  console.log("Headers:", req.headers.authorization);
+  // console.log("Headers:", req.headers.authorization);
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "No token" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret-key-change-in-production");
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default-secret-key-change-in-production",
+    );
     //console.log("Decoded JWT:", decoded); // هذا مهم
     req.user = decoded;
     next();

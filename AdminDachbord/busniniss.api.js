@@ -32,11 +32,22 @@ export const getMyBussnises = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 export const updateMyBussnise = async (req, res) => {
   try {
-    const { name, type, disc, contact, address,color ,openTime,closedTime,logoImage,coverImage,location} = req.body;
-    console.log(req.body)
+    const {
+      name,
+      type,
+      disc,
+      contact,
+      address,
+      color,
+      openTime,
+      closedTime,
+      logoImage,
+      coverImage,
+      location,
+    } = req.body;
+    console.log(req.body);
     const locationData = location
       ? {
           type: "Point",
@@ -44,7 +55,7 @@ export const updateMyBussnise = async (req, res) => {
         }
       : undefined;
     const updated = await Bussnise.findOneAndUpdate(
-      { bussnisOwner: req.user.id }, 
+      { bussnisOwner: req.user.id },
       {
         name,
         type,
@@ -52,21 +63,20 @@ export const updateMyBussnise = async (req, res) => {
         contact,
         address,
         theme: color,
-        openTime:openTime,
-        closeTime:closedTime,
+        openTime: openTime,
+        closeTime: closedTime,
         coverImage,
-        logoImage, 
-        slug:slugify(name, { lower: true }),
+        logoImage,
+        slug: slugify(name, { lower: true }),
         ...(locationData && { location: locationData }),
-        
       },
       { new: true },
     );
-    
+
     if (!updated) {
       return res.status(404).json({ message: "Business not found" });
     }
-  
+
     res.json({
       message: "Business updated successfully",
       data: updated,
@@ -79,13 +89,13 @@ export const registerBussnise = async (req, res) => {
   try {
     const { name, type, contact, plan } = req.body;
     const image = req.file ? req.file.filename : null;
-    const findPlan = await Plans.findById(plan)
+    const findPlan = await Plans.findById(plan);
     if (!req.file) {
       return res.status(400).json({
         message: "Receipt image is required",
       });
     }
-   
+
     console.log(image);
     console.log(req.body);
     const newBussnise = new Bussnise({
@@ -97,7 +107,7 @@ export const registerBussnise = async (req, res) => {
     });
 
     await newBussnise.save();
-    
+
     console.log(newBussnise);
     const startDate = new Date();
     const endDate = new Date();
@@ -116,9 +126,14 @@ export const registerBussnise = async (req, res) => {
       console.log("Subscription saved successfully:", newSubscription);
     } catch (subError) {
       console.error("Error saving subscription:", subError);
-      return res.status(500).json({ message: "Failed to save subscription", error: subError.message });
+      return res
+        .status(500)
+        .json({
+          message: "Failed to save subscription",
+          error: subError.message,
+        });
     }
-     const exist = await Paymant.findOne({
+    const exist = await Paymant.findOne({
       subsId: newSubscription._id,
       status: "PENDING",
     });
@@ -141,7 +156,9 @@ export const registerBussnise = async (req, res) => {
       console.log("Payment saved successfully:", newPaymant);
     } catch (saveError) {
       console.error("Error saving payment:", saveError);
-      return res.status(500).json({ message: "Failed to save payment", error: saveError.message });
+      return res
+        .status(500)
+        .json({ message: "Failed to save payment", error: saveError.message });
     }
     console.log(newPaymant);
     res.json(
@@ -156,15 +173,21 @@ export const checkMyBussnise = async (req, res) => {
     const bussnise = await Bussnise.findOne({
       bussnisOwner: req.user.id,
     });
-    if(!bussnise){
+    if (!bussnise) {
       return res.json({
         hasBusiness: false,
         status: null,
-      })
+      });
     }
+    const subscription = await Subscription.findOne({
+      busId: bussnise._id,
+    }).sort({ endDate: -1 }); // آخر اشتراك
+
+    const subscriptionStatus = subscription ? subscription.status : null;
     res.json({
       hasBusiness: true,
       status: bussnise.status, // ACTIVE | PENDING | REJECTED
+      subscriptionStatus,
       businessId: bussnise._id,
     });
   } catch (error) {

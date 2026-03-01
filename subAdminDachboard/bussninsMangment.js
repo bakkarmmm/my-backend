@@ -208,8 +208,6 @@ export const updateBussnise = async (req, res) => {
   }
 };
 export const accetedOrRgected = async (req, res) => {
-  console.log(req.body);
-
   try {
     const id = req.params.id;
     const status = req.body.status;
