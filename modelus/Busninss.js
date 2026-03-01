@@ -54,6 +54,17 @@ const bussnisSchema = new mongoose.Schema(
     },
     openTime: { type: String, default: "09:00" },
     closeTime: { type: String, default: "18:00" },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"], 
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], 
+        default: [35.5018, 33.8938], 
+      },
+    },
   },
   { timestamps: true },
 );

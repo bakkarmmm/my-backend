@@ -35,7 +35,14 @@ export const getMyBussnises = async (req, res) => {
 
 export const updateMyBussnise = async (req, res) => {
   try {
-    const { name, type, disc, contact, address,color ,openTime,closedTime,logoImage,coverImage} = req.body;
+    const { name, type, disc, contact, address,color ,openTime,closedTime,logoImage,coverImage,location} = req.body;
+    console.log(req.body)
+    const locationData = location
+      ? {
+          type: "Point",
+          coordinates: [location.coordinates[0], location.coordinates[1]], // GeoJSON expects [lng, lat]
+        }
+      : undefined;
     const updated = await Bussnise.findOneAndUpdate(
       { bussnisOwner: req.user.id }, 
       {
@@ -49,15 +56,17 @@ export const updateMyBussnise = async (req, res) => {
         closeTime:closedTime,
         coverImage,
         logoImage, 
-        slug:slugify(name, { lower: true })
+        slug:slugify(name, { lower: true }),
+        ...(locationData && { location: locationData }),
+        
       },
       { new: true },
     );
-
+    
     if (!updated) {
       return res.status(404).json({ message: "Business not found" });
     }
-
+  
     res.json({
       message: "Business updated successfully",
       data: updated,

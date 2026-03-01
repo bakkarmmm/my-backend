@@ -1,18 +1,6 @@
 import mongoose from "mongoose";
-import type from "./modelus/BusninssTpye.js";
-import Plans from "./modelus/Plans.js";
 import Bussnise from "./modelus/Busninss.js";
-import Subscription from "./modelus/Subscription.js";
-import Item from "./modelus/item.js";
-import Paymant from "./modelus/Paymant.js";
-import Users from "./modelus/Users.js";
-import Category from "./modelus/Category.js";
-import Busninss from "./modelus/Busninss.js";
-import Promo from "./modelus/Promo.js";
 
-// await mongoose.connect("mongodb://localhost:27017/Catalog");
-// const data = await LocalModel.find();
-// await mongoose.connect("mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/?appName=Catalog")
 const mongoURI =
   "mongodb+srv://mounirabdbakkar_db_user:qM2r3BjX3NsCHWur@catalog.skqhxcg.mongodb.net/Catalog?retryWrites=true&w=majority&appName=Catalog";
 
@@ -20,99 +8,40 @@ async function connectDB() {
   try {
     await mongoose.connect(mongoURI);
     console.log("MongoDB connected successfully!");
-    console.log("Connected to DB:", mongoose.connection.name);
-    // Handle connection events
-    mongoose.connection.on("error", (err) => {
-      console.error("MongoDB connection error:", err);
-    });
-
-    mongoose.connection.on("disconnected", () => {
-      console.log("MongoDB disconnected");
-    });
-
-    // Handle app termination
-    process.on("SIGINT", async () => {
-      await mongoose.connection.close();
-      console.log("MongoDB connection closed due to app termination");
-      process.exit(0);
-    });
   } catch (err) {
     console.error("MongoDB connection error:", err);
-    process.exit(1); // Exit process if connection fails
+    process.exit(1);
   }
 }
 
-connectDB();
-// await OnlineModel.insertMany(data);
-// Business Type
-// const types = await type.create({
-//   name: "caffeShop",
-//   layout: "viewModern",
-// });
+async function setDefaultLocations() {
+  try {
+    const bussnises = await Bussnise.find({
+      $or: [{ location: { $exists: false } }, { "location.coordinates": { $size: 0 } }],
+    });
 
-const Promos = await Promo.create({
-  name: "eidt Mubrak",
-  price: 20,
-  disc: "hello to id offers in 2026",
-  url: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlc3ByZXNzbyUyMGNvZmZlZXxlbnwxfHx8fDE3NjY2NDUzOTh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-  bussninsId: new mongoose.Types.ObjectId("695ed8764019938f1cd74d65"),
-});
-//ITEM
-// const Item = await Item.create({
+    console.log(`Found ${bussnises.length} businesses without location.`);
 
-// });
-// Business
-// const business = await Bussnise.create({
-//   name: "Test Restaurant",
-//   bussnisOwner: new mongoose.Types.ObjectId(), // مؤقت
-//   slug: "test-restaurant",
+    for (const biz of bussnises) {
+      biz.location = {
+        type: "Point",
+        coordinates: [35.5018, 33.8938], // بيروت افتراضياً
+      };
+      await biz.save();
+      console.log(`✅ Updated location for business: ${biz.name}`);
+    }
 
-//   type: types._id,
-//   disc: "Test description",
-//   isActive: true,
-//   contact: "71682819",
-//   theme: {
-//     bottomColor: "#00A63E",
-//   },
-// });
+    console.log("All missing locations updated successfully!");
+  } catch (err) {
+    console.error("Error updating locations:", err);
+  }
+}
 
-// Subscription
-// await Subscription.create({
-//   busId: new mongoose.Types.ObjectId("696021b94ef4a836e2067599"),
-//   planId: new mongoose.Types.ObjectId("695ed824b6f6175921ac7d67"),
-//   startDate: new Date(),
-//   endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-//   paidAmount: 50,
-// });
-// const addRatingToOldBussnises = async () => {
-//   await mongoose.connect("mongodb://localhost:27017/Catalog");// عدل اسم DB
+async function main() {
+  await connectDB();
+  await setDefaultLocations();
+  await mongoose.disconnect(); // فصل الاتصال بعد كل العمليات
+  process.exit(0);
+}
 
-// const result = await Busninss.updateMany(
-//   { }, // فقط المستندات التي لا تحتوي rating
-//   { $set: {
-//         openTime: "09:00",  // الوقت الافتراضي اللي بدك
-//         closeTime: "18:00",
-//       },}         // أضف الحقل بالقيمة الافتراضية
-// );
-// const update = await Bussnise.updateMany(
-//   {}, // فقط المستندات التي لا تحتوي rating
-//   { $unset: { isActive: "" } }         // أضف الحقل بالقيمة الافتراضية
-// );
-//   const bussninsObjectId = new mongoose.Types.ObjectId(
-//   "695ed8764019938f1cd74d65"
-// );
-// const newPaymant = new Paymant({
-//       bussninsId: bussninsObjectId,
-//        subsId: bussninsObjectId,
-//       receiptImage:"image",
-//      status:"PENDING"
-//     })
-//     await newPaymant.save();
-// //   console.log("Updated documents:", result.modifiedCount);
-//   mongoose.disconnect();
-// };
-// addRatingToOldBussnises();
-// console.log(result)
-console.log("Seed data inserted");
-
-process.exit();
+main();
