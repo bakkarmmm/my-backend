@@ -14,6 +14,12 @@ yarn.lock
 uploads/
 temp/
 tmp/
+# Ignore specific file
+m.js
+u.js
+seed.js
+send.js
+
 
 # IDE and editor files
 .vscode/

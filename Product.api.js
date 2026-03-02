@@ -26,12 +26,12 @@ router.get("/:resturantSlug", async (req, res) => {
       path: "gategoryID",
       select: "name",
     });
-    const Promos = await Promo.find({ bussninsId: resturant._id });
+    const Promos = await Promo.find({ bussninsId: resturant._id ,isActive:true});
     const categoriesIds = await Item.find({
       bussnins_id: resturant._id,
     }).distinct("gategoryID");
     const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
-    const categories = await Category.find({ _id: { $in: categoriesIds } });
+    const categories = await Category.find({ _id: { $in: categoriesIds },isActive:true });
     const bussnise = await Busninss.find({ slug: resturantSlug }).populate({
       path: "type",
       select: "name",
