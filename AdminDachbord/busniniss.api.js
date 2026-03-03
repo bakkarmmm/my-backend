@@ -8,6 +8,9 @@ import slugify from "slugify";
 import Subscription from "../modelus/Subscription.js";
 import Paymant from "../modelus/Paymant.js";
 import Plans from "../modelus/Plans.js";
+import Category from "../modelus/Category.js";
+import Item from "../modelus/item.js";
+import Promo from "../modelus/Promo.js";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -126,12 +129,10 @@ export const registerBussnise = async (req, res) => {
       console.log("Subscription saved successfully:", newSubscription);
     } catch (subError) {
       console.error("Error saving subscription:", subError);
-      return res
-        .status(500)
-        .json({
-          message: "Failed to save subscription",
-          error: subError.message,
-        });
+      return res.status(500).json({
+        message: "Failed to save subscription",
+        error: subError.message,
+      });
     }
     const exist = await Paymant.findOne({
       subsId: newSubscription._id,
@@ -194,7 +195,29 @@ export const checkMyBussnise = async (req, res) => {
     res.status(500).json({ error });
   }
 };
+export const GenraleInfo = async (req, res) => {
+  const id = req.params.id;
+  console.log("hello")
+  try {
+    const bussnise = await Bussnise.findOne({
+      bussnisOwner: req.user.id,
+    });
+    const Gategoires = await Category.countDocuments({
+      bussninsId: bussnise._id,
+    });
+    const Products = await Item.countDocuments({ bussnins_id: bussnise._id });
+    const Promos =  await Promo.countDocuments({bussninsId:bussnise._id})
+    res.json({
+      products:Products,
+      categories:Gategoires,
+      promos:Promos
+    })
+  } catch (error) {
+    res.status(400).json({ error: error });
+  }
+};
 router.get("/dachboard/my", protect, getMyBussnises);
+router.get("/GeneraleInfo", protect, GenraleInfo);
 router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
 router.post("/addBussnise", protect, upload.single("image"), registerBussnise);

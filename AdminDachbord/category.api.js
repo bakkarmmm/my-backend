@@ -78,6 +78,7 @@ export const deleteCategorie = async(req,res)=>{
     res.status(400).json({error:error})
   }
 }
+
 router.get('/getCategories',protect,getCtegories);
 router.post('/insertCategorie',protect,insertCategorie);
 router.put('/update/:id',protect,UpdateCategorie);
