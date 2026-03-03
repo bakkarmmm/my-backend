@@ -16,6 +16,8 @@ dotenv.config();
 const analyticsDataClient = new BetaAnalyticsDataClient({
   keyFilename: process.env.SERVICE_ACCOUNT_FILE,
 });
+const propertyId = process.env.GA_PROPERTY_ID;
+
 const getStoreViewsDaily = async (storeName) => {
   try {
     const [response] = await analyticsDataClient.runReport({
@@ -50,7 +52,7 @@ const getStoreViewsDaily = async (storeName) => {
     throw error;
   }
 };
-const propertyId = process.env.GA_PROPERTY_ID;
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
