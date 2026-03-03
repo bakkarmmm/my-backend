@@ -19,7 +19,8 @@ m.js
 u.js
 seed.js
 send.js
-
+# Google Service Account
+ga4-analytics-api-489118-4567f1f756d7.json
 
 # IDE and editor files
 .vscode/
