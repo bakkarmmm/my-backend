@@ -1,5 +1,6 @@
 import express from "express";
-
+import dotenv from "dotenv";
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
 import Bussnise from "../modelus/Busninss.js";
 import Type from "../modelus/BusninssTpye.js";
 import { protect } from "../midlware/auth.js";
@@ -11,6 +12,45 @@ import Plans from "../modelus/Plans.js";
 import Category from "../modelus/Category.js";
 import Item from "../modelus/item.js";
 import Promo from "../modelus/Promo.js";
+dotenv.config();
+const analyticsDataClient = new BetaAnalyticsDataClient({
+  keyFilename: process.env.SERVICE_ACCOUNT_FILE,
+});
+const getStoreViewsDaily = async (storeName) => {
+  try {
+    const [response] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+      dimensions: [
+        { name: "date" },      // كل يوم
+        { name: "pagePath" },  // صفحة المتجر
+      ],
+      metrics: [{ name: "screenPageViews" }],
+      dimensionFilter: {
+        filter: {
+          fieldName: "pagePath",
+          stringFilter: {
+            matchType: "EXACT",
+            value: `/${storeName}`,
+          },
+        },
+      },
+    });
+
+    // تحويل النتائج لمصفوفة يومية
+    const dailyViews = response.rows?.map((row) => ({
+      date: row.dimensionValues[0].value,         // التاريخ YYYYMMDD
+      pagePath: row.dimensionValues[1].value,     // الرابط
+      views: parseInt(row.metricValues[0].value),
+    })) || [];
+
+    return dailyViews;
+  } catch (error) {
+    console.error("Error fetching daily store views:", error);
+    throw error;
+  }
+};
+const propertyId = process.env.GA_PROPERTY_ID;
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -197,7 +237,7 @@ export const checkMyBussnise = async (req, res) => {
 };
 export const GenraleInfo = async (req, res) => {
   const id = req.params.id;
-  console.log("hello")
+  console.log("hello");
   try {
     const bussnise = await Bussnise.findOne({
       bussnisOwner: req.user.id,
@@ -206,14 +246,28 @@ export const GenraleInfo = async (req, res) => {
       bussninsId: bussnise._id,
     });
     const Products = await Item.countDocuments({ bussnins_id: bussnise._id });
-    const Promos =  await Promo.countDocuments({bussninsId:bussnise._id})
+    const Promos = await Promo.countDocuments({ bussninsId: bussnise._id });
     res.json({
-      products:Products,
-      categories:Gategoires,
-      promos:Promos
-    })
+      products: Products,
+      categories: Gategoires,
+      promos: Promos,
+    });
   } catch (error) {
     res.status(400).json({ error: error });
+  }
+};
+export const StoreViews = async (req, res) => {
+  const { storeName } = req.params;
+  console.log(req.user.id)
+  try {
+    const bussnises = await Bussnise.findOne({
+      bussnisOwner: req.user.id,
+    });
+    console.log(bussnises.slug)
+    const views = await getStoreViewsDaily(bussnises.slug);
+    res.json({ views });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch store views" });
   }
 };
 router.get("/dachboard/my", protect, getMyBussnises);
@@ -221,4 +275,5 @@ router.get("/GeneraleInfo", protect, GenraleInfo);
 router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
 router.post("/addBussnise", protect, upload.single("image"), registerBussnise);
+router.get("/store-views", protect, StoreViews);
 export default router;
