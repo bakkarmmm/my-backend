@@ -55,7 +55,48 @@ const getStoreViewsDaily = async (storeName) => {
     throw error;
   }
 };
+async function getTopProducts(storeSlug) {
+  const [response] = await analyticsDataClient.runReport({
+    property: `properties/${propertyId}`,
+    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+    dimensions: [{ name: "pagePath" }],
+    metrics: [{ name: "screenPageViews" }],
+    dimensionFilter: {
+      filter: {
+        fieldName: "pagePath",
+        stringFilter: {
+          matchType: "BEGINS_WITH",
+          value: `/${storeSlug}/`,
+        },
+      },
+    },
+    orderBys: [
+      {
+        metric: { metricName: "screenPageViews" },
+        desc: true,
+      },
+    ],
+    limit: 5,
+  });
 
+  // بدل الـ productId، نجيب الـ Item من MongoDB ونرجع اسمه
+  const topProducts = [];
+  for (const row of response.rows || []) {
+    const path = row.dimensionValues[0].value;
+    const views = Number(row.metricValues[0].value);
+    const productId = path.split("/")[2]; // id من URL
+
+    const product = await Item.findById(productId).select("name"); // جلب الاسم فقط
+    if (product) {
+      topProducts.push({
+        name: product.name,
+        views,
+      });
+    }
+  }
+
+  return topProducts;
+}
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -270,7 +311,8 @@ export const StoreViews = async (req, res) => {
     });
     console.log(bussnises.slug)
     const views = await getStoreViewsDaily(bussnises.slug);
-    res.json({ views });
+    const Top5 = await getTopProducts(bussnises.slug);
+    res.json({ views,Top5 });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch store views" });
   }
