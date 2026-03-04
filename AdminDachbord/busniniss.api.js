@@ -13,8 +13,11 @@ import Category from "../modelus/Category.js";
 import Item from "../modelus/item.js";
 import Promo from "../modelus/Promo.js";
 dotenv.config();
+// const analyticsDataClient = new BetaAnalyticsDataClient({
+//   keyFilename: process.env.SERVICE_ACCOUNT_FILE,
+// });
 const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFilename: process.env.SERVICE_ACCOUNT_FILE,
+  credentials: JSON.parse(process.env.SERVICE_ACCOUNT_JSON),
 });
 const propertyId = process.env.GA_PROPERTY_ID;
 
