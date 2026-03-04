@@ -97,6 +97,30 @@ async function getTopProducts(storeSlug) {
 
   return topProducts;
 }
+async function getWhatsAppClicks(storeSlug) {
+  const [response] = await analyticsDataClient.runReport({
+    property: `properties/${propertyId}`,
+    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+    dimensions: [{ name: "eventName" }],
+    metrics: [{ name: "eventCount" }],
+    dimensionFilter: {
+      filter: {
+        fieldName: "eventName",
+        stringFilter: {
+          matchType: "EXACT",
+          value: "whatsapp_click",
+        },
+      },
+    },
+  });
+
+  const total =
+    response.rows?.reduce((sum, row) => {
+      return sum + Number(row.metricValues[0].value);
+    }, 0) || 0;
+
+  return total;
+}
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -312,7 +336,8 @@ export const StoreViews = async (req, res) => {
     console.log(bussnises.slug)
     const views = await getStoreViewsDaily(bussnises.slug);
     const Top5 = await getTopProducts(bussnises.slug);
-    res.json({ views,Top5 });
+    const whatssapEvents = await getWhatsAppClicks(bussnises.slug);
+    res.json({ views,Top5,whatssapEvents });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch store views" });
   }
