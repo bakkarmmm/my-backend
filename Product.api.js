@@ -11,7 +11,7 @@ router.get("/item/:id", async (req, res) => {
     const item = await Item.findById(id).populate({
       path: "gategoryID",
       select: "name",
-    }).populate({path:"bussnins_id",select:"contact theme"});
+    }).populate({path:"bussnins_id",select:"contact theme slug"});
     if (!item) return res.status(404).json({ message: "Item not found" });
     res.json(item);
   } catch (error) {
