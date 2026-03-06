@@ -63,10 +63,24 @@ export const insert = async (req, res) => {
       type: type,
       disc: disc,
       adrres: addres,
-      status: "PENDING",
+      status: "ACTIVE",
       contact: contact,
       theme: theme,
     });
+    const existingBusiness = await Bussnise.findOne({
+      name: { $regex: `^${name}$`, $options: "i" },
+    });
+
+    if (existingBusiness) {
+      return res.status(400).json({
+        message: "Business name already exists. Please choose another name.",
+      });
+    }
+    if (existingBusiness) {
+      return res.status(400).json({
+        message: "Business name already exists. Please choose another name.",
+      });
+    }
     await newBussnise.save();
     const startDate = new Date();
     const endDate = new Date();
@@ -81,15 +95,26 @@ export const insert = async (req, res) => {
       startDate,
       endDate,
       paidAmount: plan.price,
-      status: status,
+      status: "active",
     });
 
     await newSubscription.save();
+
+    const payment = new Paymant({
+      bussninsId: newBussnise._id,
+      subsId: newSubscription._id,
+      status: "APPROVED",
+      type: "ADMIN",
+      amount: 0,
+      receiptImage: null,
+    });
+    await payment.save();
     res.status(201).json({
       message: "Business created successfully",
       data: { bussnise: newBussnise, subscription: newSubscription },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: "Error creating business",
       error: error.message,
@@ -135,7 +160,12 @@ export const deleteBussnines = async (req, res) => {
 export const updateBussnise = async (req, res) => {
   try {
     const id = req.params.id;
-
+    const subscriptionStatusMap = {
+      PENDING: "pending",
+      ACTIVE: "active",
+      REJECTED: "canceled",
+      CLOSED: "canceled",
+    };
     const {
       planId,
       status,
@@ -147,7 +177,7 @@ export const updateBussnise = async (req, res) => {
       disc,
       theme,
     } = req.body;
-
+    console.log(req.body);
     const bussnise = await Bussnise.findByIdAndUpdate(
       id,
       {
@@ -159,6 +189,7 @@ export const updateBussnise = async (req, res) => {
           ...(adrres && { adrres }),
           ...(disc && { disc }),
           ...(theme && { theme }),
+          ...(status && {status})
         },
       },
       { new: true },
@@ -172,7 +203,8 @@ export const updateBussnise = async (req, res) => {
     }
 
     if (typeof status === "string") {
-      subscription.status = status;
+      const upperStatus = status.toUpperCase();
+      subscription.status = subscriptionStatusMap[upperStatus];
     }
 
     console.log("ok1");
@@ -204,7 +236,11 @@ export const updateBussnise = async (req, res) => {
       subscription,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.log(error);
+    res.status(500).json({
+      message: "Error creating business",
+      error: error.message,
+    });
   }
 };
 export const accetedOrRgected = async (req, res) => {

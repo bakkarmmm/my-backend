@@ -12,7 +12,7 @@ const PaymantsSchema = new mongoose.Schema(
     },
     receiptImage: {
       type: String,
-      required: true,
+      default: null,
     },
     status: {
       type: String,
@@ -26,7 +26,7 @@ const PaymantsSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["NEW", "RENEW"],
+      enum: ["NEW", "RENEW","FREE","ADMIN"],
       default: "NEW",
     },
      amount:{
