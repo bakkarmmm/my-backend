@@ -189,7 +189,7 @@ export const updateBussnise = async (req, res) => {
           ...(adrres && { adrres }),
           ...(disc && { disc }),
           ...(theme && { theme }),
-          ...(status && {status})
+          ...(status && { status }),
         },
       },
       { new: true },
@@ -278,6 +278,178 @@ export const accetedOrRgected = async (req, res) => {
     res.status(500).json(error);
   }
 };
+export const GenraleInforamtion = async (req, res) => {
+  try {
+
+    const now = new Date();
+
+    const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const percent = (current, previous) => {
+      if (previous === 0) return 0;
+      return Number((((current - previous) / previous) * 100).toFixed(1));
+    };
+
+    const stats = await Bussnise.aggregate([
+      {
+        $facet: {
+
+          // كل البزنس
+          totals: [
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 }
+              }
+            }
+          ],
+
+          // هذا الشهر
+          thisMonth: [
+            {
+              $match: {
+                createdAt: { $gte: startThisMonth }
+              }
+            },
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 }
+              }
+            }
+          ],
+
+          // الشهر الماضي
+          lastMonth: [
+            {
+              $match: {
+                createdAt: {
+                  $gte: startLastMonth,
+                  $lte: endLastMonth
+                }
+              }
+            },
+            {
+              $group: {
+                _id: "$status",
+                count: { $sum: 1 }
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const totals = stats[0].totals;
+    const thisMonth = stats[0].thisMonth;
+    const lastMonth = stats[0].lastMonth;
+
+    const getCount = (arr, status) =>
+      arr.find((i) => i._id === status)?.count || 0;
+
+    const allACTIVE = getCount(totals, "ACTIVE");
+    const allPENDING = getCount(totals, "PENDING");
+    const allREJECTED = getCount(totals, "REJECTED");
+    const allCLOSED = getCount(totals, "CLOSED");
+
+    const thisMonthACTIVE = getCount(thisMonth, "ACTIVE");
+    const lastMonthACTIVE = getCount(lastMonth, "ACTIVE");
+
+    const thisMonthPENDING = getCount(thisMonth, "PENDING");
+    const lastMonthPENDING = getCount(lastMonth, "PENDING");
+
+    const thisMonthREJECTED = getCount(thisMonth, "REJECTED");
+    const lastMonthREJECTED = getCount(lastMonth, "REJECTED");
+
+    const thisMonthCLOSED = getCount(thisMonth, "CLOSED");
+    const lastMonthCLOSED = getCount(lastMonth, "CLOSED");
+
+    const allCount =
+      allACTIVE + allPENDING + allREJECTED + allCLOSED;
+    const thisMonthAll = thisMonth.reduce((sum, i) => sum + i.count, 0);
+const lastMonthAll = lastMonth.reduce((sum, i) => sum + i.count, 0);
+const allCountPercent = percent(thisMonthAll, lastMonthAll);
+    res.json({
+      allCount,
+      allACTIVE,
+      allPENDING,
+      allREJECTED,
+      allCLOSED,
+      allCountPercent : percent(thisMonthAll, lastMonthAll),
+      activePercent: percent(thisMonthACTIVE, lastMonthACTIVE),
+      pendingPercent: percent(thisMonthPENDING, lastMonthPENDING),
+      rejectedPercent: percent(thisMonthREJECTED, lastMonthREJECTED),
+      closedPercent: percent(thisMonthCLOSED, lastMonthCLOSED)
+    });
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+export const BusinessGrowth = async (req, res) => {
+  try {
+    const now = new Date();
+    const startYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    // Aggregation: نحسب عدد البزنس المنشأة كل شهر
+    const growth = await Bussnise.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startYear } // آخر 12 شهر
+        }
+      },
+      {
+        $group: {
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // Format البيانات للـ frontend
+    const formatted = growth.map(item => {
+      const month = item._id.month.toString().padStart(2, "0");
+      return {
+        month: `${item._id.year}-${month}`, // مثال: 2026-03
+        count: item.count
+      };
+    });
+
+    res.json(formatted);
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+export const getStatusCounts = async(req,res)=>{
+  try {
+    const result = await Subscription.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // صياغة النتيجة كـ array
+    const formatted = result.map(r => ({
+      status: r._id,
+      count: r.count
+    }));
+
+    res.json({ formatted }); // الآن formatted هو array
+  } catch (err) {
+    res.status(501).json(err);
+    console.error(err);
+  }
+}
+router.get("/GenraleInforamtion",protect, GenraleInforamtion);
+router.get("/getStatusCounts",protect, getStatusCounts);
+router.get("/BusinessGrowth",protect, BusinessGrowth);
 router.get("/allbussnise", protect, getBussnines);
 router.post("/insert", protect, insert);
 router.put("/updateStatus/:id", protect, updateStatus);
