@@ -199,16 +199,18 @@ export const updateMyBussnise = async (req, res) => {
   }
 };
 export const registerBussnise = async (req, res) => {
+  console.log(req.body);
   try {
-    const { name, type, contact, plan } = req.body;
-    const image = req.file ? req.file.filename : null;
-    const findPlan = await Plans.findById(plan);
-    if (!req.file) {
-      return res.status(400).json({
-        message: "Receipt image is required",
-      });
-    }
+    const { name, type, contact, plan,image } = req.body;
 
+    // const image = req.file ? req.file.filename : null;
+    // const findPlan = await Plans.findById(plan);
+    // if (!req.file) {
+    //   return res.status(400).json({
+    //     message: "Receipt image is required",
+    //   });
+    // }
+    
     console.log(image);
     console.log(req.body);
     const newBussnise = new Bussnise({
@@ -220,17 +222,21 @@ export const registerBussnise = async (req, res) => {
     });
 
     await newBussnise.save();
+   const selectedPlan = await Plans.findById(plan); // plan هنا هو _id
 
+if (!selectedPlan) {
+  return res.status(404).json({ message: "Plan not found" });
+}
     console.log(newBussnise);
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
     const newSubscription = new Subscription({
       busId: newBussnise._id,
-      planId: plan,
+      planId: selectedPlan._id,
       startDate,
       endDate,
-      paidAmount: plan.price,
+      paidAmount: selectedPlan.price,
       status: "pending",
     });
     console.log("Before saving subscription:", newSubscription);
@@ -260,6 +266,7 @@ export const registerBussnise = async (req, res) => {
       subsId: newSubscription._id,
       receiptImage: image,
       status: "PENDING",
+      amount: selectedPlan.price,
     });
     console.log("Before saving payment:", newPaymant);
     try {
@@ -277,6 +284,7 @@ export const registerBussnise = async (req, res) => {
     );
   } catch (error) {
     res.status(500).json({ message: error.message });
+    console.log(error)
   }
 };
 export const checkMyBussnise = async (req, res) => {
@@ -346,6 +354,7 @@ router.get("/dachboard/my", protect, getMyBussnises);
 router.get("/GeneraleInfo", protect, GenraleInfo);
 router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
-router.post("/addBussnise", protect, upload.single("image"), registerBussnise);
+// router.post("/addBussnise", protect, upload.single("image"), registerBussnise);
+router.post("/addBussnise", protect, upload.none(),  registerBussnise);
 router.get("/store-views", protect, StoreViews);
 export default router;
