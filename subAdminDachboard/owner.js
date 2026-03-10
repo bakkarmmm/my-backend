@@ -15,8 +15,8 @@ export const getAllOwner = async (req, res) => {
 };
 export const getAllownerBussnines = async (req, res) => {
   try {
-    const users = await User.find({ role: "bussnisOwner" }).select(
-      "name phone isActive createdAt"
+    const users = await User.find({}).select(
+      "name phone isActive createdAt role",
     );
     const userwithBusiness = await Promise.all(
       users.map(async (user) => {
@@ -27,7 +27,7 @@ export const getAllownerBussnines = async (req, res) => {
           ...user.toObject(),
           business,
         };
-      })
+      }),
     );
     res.json(userwithBusiness);
   } catch (error) {
@@ -36,8 +36,8 @@ export const getAllownerBussnines = async (req, res) => {
 };
 const adduser = async (req, res) => {
   try {
-    const { name, phone, password } = req.body;
-    const role = "bussnisOwner";
+    const { name, phone, password, role } = req.body;
+    // const role = "bussnisOwner";
     const hashedPassword = await bcrypt.hash(password, 10);
     const newOwner = await User.create({
       name: name,
@@ -67,7 +67,7 @@ export const updateStatus = async (req, res) => {
     const update = await User.findByIdAndUpdate(
       id,
       { $set: { isActive: status } },
-      { new: true }
+      { new: true },
     );
     res.json("accepted Update ...");
   } catch (error) {
@@ -78,18 +78,18 @@ export const updateStatus = async (req, res) => {
   }
 };
 export const update = async (req, res) => {
-   console.log("ok")
+  console.log("ok");
   try {
     const id = req.params.id;
-    const { name, phone } = req.body;
+    const { name, phone, role } = req.body;
     const update = await User.findByIdAndUpdate(
       id,
-      { $set: { name, phone } },
-      { new: true }
+      { $set: { name, phone, role } },
+      { new: true },
     );
-    res.json("finish Update ...")
+    res.json("finish Update ...");
   } catch (error) {
-    res.status(400).json(error)
+    res.status(400).json(error);
   }
 };
 router.get("/allowners", protect, getAllOwner);
@@ -97,5 +97,5 @@ router.get("/userswithBusiness", protect, getAllownerBussnines);
 router.post("/addnewOwner", protect, adduser);
 router.delete("/deleteUser/:id", protect, delteUser);
 router.put("/updateStatus/:id", protect, updateStatus);
-router.put("/updateUser/:id",protect,update)
+router.put("/updateUser/:id", protect, update);
 export default router;

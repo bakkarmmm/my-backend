@@ -1,47 +1,36 @@
-async function getWhatsAppClicks(storeSlug) {
-  try {
-    const [response] = await analyticsDataClient.runReport({
-    property: `properties/${propertyId}`,
-    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
 
-    dimensions: [{ name: "store_name" }],
+// export default function Notifications({ token }) {
+//   const [notifications, setNotifications] = useState([]);
 
-    metrics: [{ name: "eventCount" }],
+//   useEffect(() => {
+//     const fetchNotifications = async () => {
+//       const res = await axios.get("/api/notifications", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       setNotifications(res.data);
+//     };
+//     fetchNotifications();
+//   }, []);
 
-    dimensionFilter: {
-      andGroup: {
-        expressions: [
-          {
-            filter: {
-              fieldName: "eventName",
-              stringFilter: {
-                matchType: "EXACT",
-                value: "whatsapp_click",
-              },
-            },
-          },
-          {
-            filter: {
-              fieldName: "store_name",
-              stringFilter: {
-                matchType: "EXACT",
-                value: storeSlug,
-              },
-            },
-          },
-        ],
-      },
-    },
-  });
+//   const markAsRead = async (id) => {
+//     await axios.put(`/api/notifications/${id}/read`, {
+//       headers: { Authorization: `Bearer ${token}` },
+//     });
+//     setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
+//   };
 
-  const total =
-    response.rows?.reduce((sum, row) => {
-      return sum + Number(row.metricValues[0].value);
-    }, 0) || 0;
-
-  return total;
-  } catch (error) {
-    console.error("GA4 error:", error);
-    throw error;
-  }
-}
+//   return (
+//     <div>
+//       <h3>Notifications</h3>
+//       {notifications.map(n => (
+//         <div key={n._id} style={{ background: n.read ? "#f0f0f0" : "#fff", margin: "5px", padding: "10px", border: "1px solid #ddd" }}>
+//           <h4>{n.title}</h4>
+//           <p>{n.message}</p>
+//           <button onClick={() => markAsRead(n._id)}>Mark as read</button>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }

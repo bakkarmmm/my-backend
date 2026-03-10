@@ -1,0 +1,35 @@
+import express from "express";
+import { protect } from "../midlware/auth.js";
+import Users from "../modelus/Users.js";
+import Notification from "../modelus/Notification.js";
+const router = express.Router();
+
+export const notification = async (req, res) => {
+  // console.log("errorrrrrrrrr")
+  try {
+    const notifications = await Notification.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(50); // آخر 50 إشعار
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    console.log(err);
+  }
+};
+export const ReadNotifaciton = async (req, res) => {
+  try {
+    const notif = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { read: true },
+      { new: true },
+    );
+    res.json(notif);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    console.log(err)
+  }
+};
+router.get("/Getnotifications", protect, notification);
+router.put("/read/:id", protect, ReadNotifaciton);
+// router.put("/UpdateUser", protect, updateUserInforamtion);
+export default router;

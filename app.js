@@ -19,7 +19,9 @@ import paymantsApi from './subAdminDachboard/Paymanet.js'
 import paymanUsertApi from './AdminDachbord/Payment.api.js'
 import PromoApi from './AdminDachbord/Promo.api.js';
 import { expireSubscriptionsJob } from "./utils/cronJobs.js";
+import  notificationApi  from "./AdminDachbord/notification.js";
 expireSubscriptionsJob();
+app.use("/notifications",notificationApi)
 app.use("/auth",LoginApi)
 app.use("/dachboard",Dachbordapi)
 app.use("/products",productApi)
