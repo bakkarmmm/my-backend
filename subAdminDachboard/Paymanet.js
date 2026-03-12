@@ -87,17 +87,19 @@ export const rejected = async (req, res) => {
       { $set: { status: "REJECTED" } },
       { new: true },
     );
+    const subscription = await Subscription.findById(subsId);
 
-    const subscription = await Subscription.findByIdAndUpdate(
-      subsId,
-      { $set: { status: "expired" } },
-      { new: true },
-    );
+     const now = new Date();
+    if (subscription.endDate < now) {
+      // انتهى الاشتراك → وضعه كـ "expired"
+      subscription.status = "expired";
+      await subscription.save();
+    }
      const notification = {
       userId: businessOwner.bussnisOwner,
       type: "rejected ted renew",
       title: "rejected your Payment",
-      message: "Please Contact Admin",
+      message: "Your renewal request was rejected. Please contact admin.",
       link: "/dachboard/Subscription",
     };
     const newNotification = new Notification(notification);
