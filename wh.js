@@ -34,3 +34,21 @@
 //     </div>
 //   );
 // }
+// router.put("/reorder", async (req, res) => {
+//   const { categories } = req.body;
+
+//   try {
+//     const updates = categories.map((cat, index) =>
+//       Category.findByIdAndUpdate(cat._id, { order: index })
+//     );
+
+//     await Promise.all(updates);
+
+//     res.json({ message: "Order updated" });
+//   } catch (err) {
+//     res.status(500).json({ error: "Failed to reorder" });
+//   }
+// });
+// const categories = await Category
+//   .find({ bussninsId: bussniseId })
+//   .sort({ order: 1 });
