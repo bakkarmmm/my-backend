@@ -12,6 +12,8 @@ import Busninss from "../modelus/Busninss.js";
 import Paymant from "../modelus/Paymant.js";
 import Item from "../modelus/item.js";
 import Category from "../modelus/Category.js";
+import Users from "../modelus/Users.js";
+import Notification from "../modelus/Notification.js";
 const router = express.Router();
 
 export const getBussnines = async (req, res) => {
@@ -245,9 +247,11 @@ export const updateBussnise = async (req, res) => {
 };
 export const accetedOrRgected = async (req, res) => {
   try {
+    
     const id = req.params.id;
     const status = req.body.status;
-
+   const businessOwner = await Bussnise.findById(id)
+      .select("bussnisOwner")
     const updateb = await Busninss.findByIdAndUpdate(
       id,
       {
@@ -271,7 +275,15 @@ export const accetedOrRgected = async (req, res) => {
       { bussninsId: id },
       { $set: { status: status === "ACTIVE" ? "APPROVED" : "REJECTED" } },
     );
-
+    const notification = {
+      userId: businessOwner.bussnisOwner,
+      type: "Create Busssnise",
+      title: "Accepted create",
+      message: "Welcome to Your Store dachboard",
+      link: "/dachboard/general",
+    };
+    const newNotification = new Notification(notification);
+    await newNotification.save();
     console.log("done !");
     res.json("is accpeted account ...");
   } catch (error) {
@@ -280,7 +292,6 @@ export const accetedOrRgected = async (req, res) => {
 };
 export const GenraleInforamtion = async (req, res) => {
   try {
-
     const now = new Date();
 
     const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -295,30 +306,29 @@ export const GenraleInforamtion = async (req, res) => {
     const stats = await Bussnise.aggregate([
       {
         $facet: {
-
           // كل البزنس
           totals: [
             {
               $group: {
                 _id: "$status",
-                count: { $sum: 1 }
-              }
-            }
+                count: { $sum: 1 },
+              },
+            },
           ],
 
           // هذا الشهر
           thisMonth: [
             {
               $match: {
-                createdAt: { $gte: startThisMonth }
-              }
+                createdAt: { $gte: startThisMonth },
+              },
             },
             {
               $group: {
                 _id: "$status",
-                count: { $sum: 1 }
-              }
-            }
+                count: { $sum: 1 },
+              },
+            },
           ],
 
           // الشهر الماضي
@@ -327,21 +337,31 @@ export const GenraleInforamtion = async (req, res) => {
               $match: {
                 createdAt: {
                   $gte: startLastMonth,
-                  $lte: endLastMonth
-                }
-              }
+                  $lte: endLastMonth,
+                },
+              },
             },
             {
               $group: {
                 _id: "$status",
-                count: { $sum: 1 }
-              }
-            }
-          ]
-        }
-      }
+                count: { $sum: 1 },
+              },
+            },
+          ],
+        },
+      },
     ]);
-
+    const result = await Paymant.aggregate([
+      {
+        $match: { status: "APPROVED" },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
     const totals = stats[0].totals;
     const thisMonth = stats[0].thisMonth;
     const lastMonth = stats[0].lastMonth;
@@ -366,24 +386,24 @@ export const GenraleInforamtion = async (req, res) => {
     const thisMonthCLOSED = getCount(thisMonth, "CLOSED");
     const lastMonthCLOSED = getCount(lastMonth, "CLOSED");
 
-    const allCount =
-      allACTIVE + allPENDING + allREJECTED + allCLOSED;
+    const allCount = allACTIVE + allPENDING + allREJECTED + allCLOSED;
     const thisMonthAll = thisMonth.reduce((sum, i) => sum + i.count, 0);
-const lastMonthAll = lastMonth.reduce((sum, i) => sum + i.count, 0);
-const allCountPercent = percent(thisMonthAll, lastMonthAll);
+    const lastMonthAll = lastMonth.reduce((sum, i) => sum + i.count, 0);
+    const allCountPercent = percent(thisMonthAll, lastMonthAll);
+    const total = result[0]?.totalAmount || 0;
     res.json({
+      total,
       allCount,
       allACTIVE,
       allPENDING,
       allREJECTED,
       allCLOSED,
-      allCountPercent : percent(thisMonthAll, lastMonthAll),
+      allCountPercent: percent(thisMonthAll, lastMonthAll),
       activePercent: percent(thisMonthACTIVE, lastMonthACTIVE),
       pendingPercent: percent(thisMonthPENDING, lastMonthPENDING),
       rejectedPercent: percent(thisMonthREJECTED, lastMonthREJECTED),
-      closedPercent: percent(thisMonthCLOSED, lastMonthCLOSED)
+      closedPercent: percent(thisMonthCLOSED, lastMonthCLOSED),
     });
-
   } catch (error) {
     res.status(500).json(error);
   }
@@ -397,48 +417,50 @@ export const BusinessGrowth = async (req, res) => {
     const growth = await Bussnise.aggregate([
       {
         $match: {
-          createdAt: { $gte: startYear } // آخر 12 شهر
-        }
+          createdAt: { $gte: startYear }, // آخر 12 شهر
+        },
       },
       {
         $group: {
-          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-          count: { $sum: 1 }
-        }
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
     // Format البيانات للـ frontend
-    const formatted = growth.map(item => {
+    const formatted = growth.map((item) => {
       const month = item._id.month.toString().padStart(2, "0");
       return {
         month: `${item._id.year}-${month}`, // مثال: 2026-03
-        count: item.count
+        count: item.count,
       };
     });
 
     res.json(formatted);
-
   } catch (error) {
     res.status(500).json(error);
   }
 };
-export const getStatusCounts = async(req,res)=>{
+export const getStatusCounts = async (req, res) => {
   try {
     const result = await Subscription.aggregate([
       {
         $group: {
           _id: "$status",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     // صياغة النتيجة كـ array
-    const formatted = result.map(r => ({
+    const formatted = result.map((r) => ({
       status: r._id,
-      count: r.count
+      count: r.count,
     }));
 
     res.json({ formatted }); // الآن formatted هو array
@@ -446,10 +468,38 @@ export const getStatusCounts = async(req,res)=>{
     res.status(501).json(err);
     console.error(err);
   }
-}
-router.get("/GenraleInforamtion",protect, GenraleInforamtion);
-router.get("/getStatusCounts",protect, getStatusCounts);
-router.get("/BusinessGrowth",protect, BusinessGrowth);
+};
+export const cancelSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const subscription = await Subscription.findById(id);
+
+    if (!subscription) {
+      return res.status(404).json({ message: "Subscription not found" });
+    }
+
+    if (subscription.status === "expired") {
+      return res.status(400).json({
+        message: "Subscription already expired",
+      });
+    }
+
+    subscription.status = "canceled";
+    await subscription.save();
+
+    res.json({
+      message: "Subscription canceled successfully",
+      subscription,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+router.get("/GenraleInforamtion", protect, GenraleInforamtion);
+router.put("/cancel/:id", protect, cancelSubscription);
+router.get("/getStatusCounts", protect, getStatusCounts);
+router.get("/BusinessGrowth", protect, BusinessGrowth);
 router.get("/allbussnise", protect, getBussnines);
 router.post("/insert", protect, insert);
 router.put("/updateStatus/:id", protect, updateStatus);

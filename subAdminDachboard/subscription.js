@@ -89,35 +89,8 @@ export const revuveSubsc = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-export const cancelSubscription = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const subscription = await Subscription.findById(id);
-
-    if (!subscription) {
-      return res.status(404).json({ message: "Subscription not found" });
-    }
-
-    if (subscription.status === "expired") {
-      return res.status(400).json({
-        message: "Subscription already expired",
-      });
-    }
-
-    subscription.status = "canceled";
-    await subscription.save();
-
-    res.json({
-      message: "Subscription canceled successfully",
-      subscription,
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 router.get("/ownerSubsc", protect, getOwnerSubscription);
 router.post("/renew", upload.single("image"), protect, revuveSubsc);
-router.put("/cancel/:id", protect, cancelSubscription);
+
 export default router;
