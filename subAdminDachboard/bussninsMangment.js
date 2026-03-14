@@ -247,11 +247,9 @@ export const updateBussnise = async (req, res) => {
 };
 export const accetedOrRgected = async (req, res) => {
   try {
-    
     const id = req.params.id;
     const status = req.body.status;
-   const businessOwner = await Bussnise.findById(id)
-      .select("bussnisOwner")
+    const businessOwner = await Bussnise.findById(id).select("bussnisOwner");
     const updateb = await Busninss.findByIdAndUpdate(
       id,
       {
@@ -262,15 +260,10 @@ export const accetedOrRgected = async (req, res) => {
     const subscription = await Subscription.findOne({ busId: id }).populate(
       "planId",
     );
-    const updateS = await subscription.updateOne(
-      { _id: subscription._id },
-      {
-        $set: {
-          status: status === "ACTIVE" ? "active" : "canceled",
-          paidAmount: status === "ACTIVE" ? subscription.planId.price : 0,
-        },
-      },
-    );
+    await Subscription.findByIdAndUpdate(subscription._id, {
+      status: status === "ACTIVE" ? "active" : "canceled",
+      paidAmount: status === "ACTIVE" ? subscription.planId.price : 0,
+    });
     const updatePayment = await Paymant.updateOne(
       { bussninsId: id },
       { $set: { status: status === "ACTIVE" ? "APPROVED" : "REJECTED" } },

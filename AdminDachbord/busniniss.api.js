@@ -12,7 +12,9 @@ import Plans from "../modelus/Plans.js";
 import Category from "../modelus/Category.js";
 import Item from "../modelus/item.js";
 import Promo from "../modelus/Promo.js";
+
 dotenv.config();
+const router = express.Router();
 // const analyticsDataClient = new BetaAnalyticsDataClient({
 //   keyFilename: process.env.SERVICE_ACCOUNT_FILE,
 // });
@@ -153,12 +155,11 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
-
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
-const router = express.Router();
+
 export const getMyBussnises = async (req, res) => {
   try {
     const bussnises = await Bussnise.find({
