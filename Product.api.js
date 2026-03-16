@@ -86,4 +86,37 @@ router.get("/:resturantSlug", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+router.get("/items/category",async (req,res)=>{
+  try {
+    const { categoryId, resturantSlug, page = 1, limit = 10 } = req.query;
+     const Bussnisee = await Busninss.findOne({ slug: resturantSlug });
+    const skip = (page - 1) * limit;
+
+    const products = await Item.find({
+      gategoryID: categoryId,
+      bussnins_id: Bussnisee._id,
+      isActive: true
+    })
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("gategoryID")
+      .populate("bussnins_id");
+
+    const total = await Item.countDocuments({
+      gategoryID: categoryId,
+      bussnins_id: Bussnisee._id,
+      isActive: true
+    });
+
+    res.json({
+      products,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+      
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+})
 export default router;
