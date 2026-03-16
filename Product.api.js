@@ -18,6 +18,35 @@ router.get("/item/:id", async (req, res) => {
     res.status(500).json(error);
   }
 });
+// router.get("/:resturantSlug", async (req, res) => {
+//   const { resturantSlug } = req.params;
+//   try {
+//     const resturant = await Busninss.findOne({ slug: resturantSlug });
+//     const items = await Item.find({ bussnins_id: resturant._id }).populate({
+//       path: "gategoryID",
+//       select: "name",
+//     });
+//     const Promos = await Promo.find({ bussninsId: resturant._id ,isActive:true});
+//     const categoriesIds = await Item.find({
+//       bussnins_id: resturant._id,
+//     }).distinct("gategoryID");
+//     const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
+//     const categories = await Category.find({ _id: { $in: categoriesIds },isActive:true }).sort({ order: 1 });
+//     const bussnise = await Busninss.find({ slug: resturantSlug }).populate({
+//       path: "type",
+//       select: "name",
+//     });
+//     res.json({
+//       menu: items,
+//       categris: categories,
+//       RestaurantNames: restaurantName,
+//       bussnise: bussnise,
+//       Promos:Promos
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
 router.get("/:resturantSlug", async (req, res) => {
   const { resturantSlug } = req.params;
   try {
@@ -26,18 +55,28 @@ router.get("/:resturantSlug", async (req, res) => {
       path: "gategoryID",
       select: "name",
     });
+    const itemsMap = {};
+    items.forEach(item => {
+      const catId = item.gategoryID._id.toString();
+      if (!itemsMap[catId]) itemsMap[catId] = [];
+      if (itemsMap[catId].length < 5) itemsMap[catId].push(item);
+    });
+
+    // ترتيب menu حسب الفئة، مع الحفاظ على نفس الحقل menu
+    const menu = [];
+    Object.values(itemsMap).forEach(itemsArr => {
+      menu.push(...itemsArr); // نضع كل المنتجات المحدودة ضمن القائمة
+    });
     const Promos = await Promo.find({ bussninsId: resturant._id ,isActive:true});
-    const categoriesIds = await Item.find({
-      bussnins_id: resturant._id,
-    }).distinct("gategoryID");
+    const categoryIds = Object.keys(itemsMap);
     const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
-    const categories = await Category.find({ _id: { $in: categoriesIds },isActive:true }).sort({ order: 1 });
+    const categories = await Category.find({ _id: { $in: categoryIds },isActive:true }).sort({ order: 1 });
     const bussnise = await Busninss.find({ slug: resturantSlug }).populate({
       path: "type",
       select: "name",
     });
     res.json({
-      menu: items,
+      menu: menu,
       categris: categories,
       RestaurantNames: restaurantName,
       bussnise: bussnise,
@@ -47,5 +86,4 @@ router.get("/:resturantSlug", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 export default router;
