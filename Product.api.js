@@ -4,7 +4,6 @@ import Category from "./modelus/Category.js";
 import Busninss from "./modelus/Busninss.js";
 import Promo from "./modelus/Promo.js";
 const router = express.Router();
-
 router.get("/item/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -86,37 +85,70 @@ router.get("/:resturantSlug", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/items/category",async (req,res)=>{
+router.get("/items/category", async (req, res) => {
   try {
-    const { categoryId, resturantSlug, page = 1, limit = 10 } = req.query;
-     const Bussnisee = await Busninss.findOne({ slug: resturantSlug });
+    const { categoryId, resturantSlug, page = 1, limit = 10, q = "" } = req.query;
+
+    const Bussnisee = await Busninss.findOne({ slug: resturantSlug });
+
     const skip = (page - 1) * limit;
 
-    const products = await Item.find({
+    const query = {
       gategoryID: categoryId,
       bussnins_id: Bussnisee._id,
-      isActive: true
-    })
+      isActive: true,
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { discription: { $regex: q, $options: "i" } },
+      ],
+    };
+
+    const products = await Item.find(query)
       .skip(skip)
       .limit(Number(limit))
       .populate("gategoryID")
       .populate("bussnins_id");
 
-    const total = await Item.countDocuments({
-      gategoryID: categoryId,
-      bussnins_id: Bussnisee._id,
-      isActive: true
-    });
+    const total = await Item.countDocuments(query);
 
     res.json({
       products,
       total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
-      
+      hasMore: skip + products.length < total,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-})
+});
+router.get("/items/search", async (req, res) => {
+  try {
+    const { q = "", page = 1, limit = 5, bussnins_id } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const query = {
+      bussnins_id,
+      isActive: true,
+      avalible: true,
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { discription: { $regex: q, $options: "i" } },
+      ],
+    };
+
+    const items = await Item.find(query)
+      .skip(skip)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await Item.countDocuments(query);
+
+    res.json({
+      items,
+      hasMore: skip + items.length < total,
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 export default router;
