@@ -36,7 +36,19 @@ const bussnisSchema = new mongoose.Schema(
       default: "akkar",
       required: true,
     },
-
+    instaLink: {
+      type: String,
+      // required: true,
+    },
+    fecbookLink: {
+      type: String,
+      // required: true,
+    },
+    exchangerate: {
+      type: Number,
+      default:89000
+      // required: true,
+    },
     status: {
       type: String,
       enum: ["PENDING", "ACTIVE", "REJECTED", "CLOSED"],

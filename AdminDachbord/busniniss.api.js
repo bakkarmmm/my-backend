@@ -29,8 +29,8 @@ const getStoreViewsDaily = async (storeName) => {
       property: `properties/${propertyId}`,
       dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
       dimensions: [
-        { name: "date" },      // كل يوم
-        { name: "pagePath" },  // صفحة المتجر
+        { name: "date" }, // كل يوم
+        { name: "pagePath" }, // صفحة المتجر
       ],
       metrics: [{ name: "screenPageViews" }],
       dimensionFilter: {
@@ -45,11 +45,12 @@ const getStoreViewsDaily = async (storeName) => {
     });
 
     // تحويل النتائج لمصفوفة يومية
-    const dailyViews = response.rows?.map((row) => ({
-      date: row.dimensionValues[0].value,         // التاريخ YYYYMMDD
-      pagePath: row.dimensionValues[1].value,     // الرابط
-      views: parseInt(row.metricValues[0].value),
-    })) || [];
+    const dailyViews =
+      response.rows?.map((row) => ({
+        date: row.dimensionValues[0].value, // التاريخ YYYYMMDD
+        pagePath: row.dimensionValues[1].value, // الرابط
+        views: parseInt(row.metricValues[0].value),
+      })) || [];
 
     return dailyViews;
   } catch (error) {
@@ -86,9 +87,16 @@ async function getTopProducts(storeSlug) {
   for (const row of response.rows || []) {
     const path = row.dimensionValues[0].value;
     const views = Number(row.metricValues[0].value);
-    const productId = path.split("/")[2]; // id من URL
+    const parts = path.split("/");
+    const productIndex = parts.indexOf("product");
 
-    const product = await Item.findById(productId).select("name"); // جلب الاسم فقط
+    let productId = null;
+
+    if (productIndex !== -1 && parts[productIndex + 1]) {
+      productId = parts[productIndex + 1];
+    }
+
+    const product = await Item.findById(productId).select("name"); 
     if (product) {
       topProducts.push({
         name: product.name,
@@ -184,6 +192,9 @@ export const updateMyBussnise = async (req, res) => {
       logoImage,
       coverImage,
       location,
+      exchangerate,
+      instaLink,
+      fecbookLink
     } = req.body;
     console.log(req.body);
     const locationData = location
@@ -207,6 +218,9 @@ export const updateMyBussnise = async (req, res) => {
         logoImage,
         slug: slugify(name, { lower: true }),
         ...(locationData && { location: locationData }),
+        exchangerate,
+      instaLink,
+      fecbookLink
       },
       { new: true },
     );
@@ -226,7 +240,7 @@ export const updateMyBussnise = async (req, res) => {
 export const registerBussnise = async (req, res) => {
   console.log(req.body);
   try {
-    const { name, type, contact, plan,image } = req.body;
+    const { name, type, contact, plan, image } = req.body;
 
     // const image = req.file ? req.file.filename : null;
     // const findPlan = await Plans.findById(plan);
@@ -235,7 +249,7 @@ export const registerBussnise = async (req, res) => {
     //     message: "Receipt image is required",
     //   });
     // }
-    
+
     console.log(image);
     console.log(req.body);
     const newBussnise = new Bussnise({
@@ -247,11 +261,11 @@ export const registerBussnise = async (req, res) => {
     });
 
     await newBussnise.save();
-   const selectedPlan = await Plans.findById(plan); // plan هنا هو _id
+    const selectedPlan = await Plans.findById(plan); // plan هنا هو _id
 
-if (!selectedPlan) {
-  return res.status(404).json({ message: "Plan not found" });
-}
+    if (!selectedPlan) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
     console.log(newBussnise);
     const startDate = new Date();
     const endDate = new Date();
@@ -309,7 +323,7 @@ if (!selectedPlan) {
     );
   } catch (error) {
     res.status(500).json({ message: error.message });
-    console.log(error)
+    console.log(error);
   }
 };
 export const checkMyBussnise = async (req, res) => {
@@ -361,18 +375,19 @@ export const GenraleInfo = async (req, res) => {
 };
 export const StoreViews = async (req, res) => {
   const { storeName } = req.params;
-  console.log(req.user.id)
+  console.log(req.user.id);
   try {
     const bussnises = await Bussnise.findOne({
       bussnisOwner: req.user.id,
     });
-    console.log(bussnises.slug)
+    console.log(bussnises.slug);
     const views = await getStoreViewsDaily(bussnises.slug);
     const Top5 = await getTopProducts(bussnises.slug);
     const whatssapEvents = await getWhatsAppClicks(bussnises.slug);
-    res.json({ views,Top5,whatssapEvents });
+    res.json({ views, Top5, whatssapEvents });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch store views" });
+    console.error("🔥 BACKEND ERROR:", error); // 👈 مهم جداً
+    res.status(500).json({ error: error.message });
   }
 };
 router.get("/dachboard/my", protect, getMyBussnises);
@@ -380,6 +395,6 @@ router.get("/GeneraleInfo", protect, GenraleInfo);
 router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
 // router.post("/addBussnise", protect, upload.single("image"), registerBussnise);
-router.post("/addBussnise", protect, upload.none(),  registerBussnise);
+router.post("/addBussnise", protect, upload.none(), registerBussnise);
 router.get("/store-views", protect, StoreViews);
 export default router;
