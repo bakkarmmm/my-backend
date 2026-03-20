@@ -178,7 +178,7 @@ router.get("/all/categorys", async (req, res) => {
   try {
     const { restaurantSlug } = req.query;
     const store = await Busninss.findOne({ slug: restaurantSlug });
-    const categories = await Category.find({bussninsId:store._id})
+    const categories = await Category.find({bussninsId:store._id}).sort({order:1})
     res.json(categories)
   } catch (err) {
     res.status(500).json(err);
