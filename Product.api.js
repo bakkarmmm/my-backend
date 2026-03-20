@@ -168,7 +168,10 @@ router.get("/items/search", async (req, res) => {
 router.get("/info/allInfo", async (req, res) => {
   try {
     const { restaurantSlug } = req.query;
-    const store = await Busninss.findOne({ slug: restaurantSlug });
+    const store = await Busninss.findOne({ slug: restaurantSlug }).populate({
+      path: "type",
+      select: "name",
+    });
     res.json(store)
   } catch (err) {
     res.status(500).json(err);
