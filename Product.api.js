@@ -7,10 +7,12 @@ const router = express.Router();
 router.get("/item/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const item = await Item.findById(id).populate({
-      path: "gategoryID",
-      select: "name",
-    }).populate({path:"bussnins_id",select:"contact theme slug"});
+    const item = await Item.findById(id)
+      .populate({
+        path: "gategoryID",
+        select: "name",
+      })
+      .populate({ path: "bussnins_id", select: "contact theme slug" });
     if (!item) return res.status(404).json({ message: "Item not found" });
     res.json(item);
   } catch (error) {
@@ -55,7 +57,7 @@ router.get("/:resturantSlug", async (req, res) => {
       select: "name",
     });
     const itemsMap = {};
-    items.forEach(item => {
+    items.forEach((item) => {
       const catId = item.gategoryID._id.toString();
       if (!itemsMap[catId]) itemsMap[catId] = [];
       if (itemsMap[catId].length < 5) itemsMap[catId].push(item);
@@ -63,13 +65,19 @@ router.get("/:resturantSlug", async (req, res) => {
 
     // ترتيب menu حسب الفئة، مع الحفاظ على نفس الحقل menu
     const menu = [];
-    Object.values(itemsMap).forEach(itemsArr => {
+    Object.values(itemsMap).forEach((itemsArr) => {
       menu.push(...itemsArr); // نضع كل المنتجات المحدودة ضمن القائمة
     });
-    const Promos = await Promo.find({ bussninsId: resturant._id ,isActive:true});
+    const Promos = await Promo.find({
+      bussninsId: resturant._id,
+      isActive: true,
+    });
     const categoryIds = Object.keys(itemsMap);
     const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
-    const categories = await Category.find({ _id: { $in: categoryIds },isActive:true }).sort({ order: 1 });
+    const categories = await Category.find({
+      _id: { $in: categoryIds },
+      isActive: true,
+    }).sort({ order: 1 });
     const bussnise = await Busninss.find({ slug: resturantSlug }).populate({
       path: "type",
       select: "name",
@@ -79,7 +87,7 @@ router.get("/:resturantSlug", async (req, res) => {
       categris: categories,
       RestaurantNames: restaurantName,
       bussnise: bussnise,
-      Promos:Promos
+      Promos: Promos,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -87,9 +95,15 @@ router.get("/:resturantSlug", async (req, res) => {
 });
 router.get("/items/category", async (req, res) => {
   try {
-    const { categoryId, resturantSlug, page = 1, limit = 10, q = "" } = req.query;
+    const {
+      categoryId,
+      restaurantSlug,
+      page = 1,
+      limit = 10,
+      q = "",
+    } = req.query;
 
-    const Bussnisee = await Busninss.findOne({ slug: resturantSlug });
+    const Bussnisee = await Busninss.findOne({ slug: restaurantSlug });
 
     const skip = (page - 1) * limit;
 
@@ -147,6 +161,25 @@ router.get("/items/search", async (req, res) => {
       items,
       hasMore: skip + items.length < total,
     });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+router.get("/info/allInfo", async (req, res) => {
+  try {
+    const { restaurantSlug } = req.query;
+    const store = await Busninss.findOne({ slug: restaurantSlug });
+    res.json(store)
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+router.get("/all/categorys", async (req, res) => {
+  try {
+    const { restaurantSlug } = req.query;
+    const store = await Busninss.findOne({ slug: restaurantSlug });
+    const categories = await Category.find({bussninsId:store._id})
+    res.json(categories)
   } catch (err) {
     res.status(500).json(err);
   }
