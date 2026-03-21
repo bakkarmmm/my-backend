@@ -40,6 +40,10 @@ const itemSchema = new mongoose.Schema(
     },
     public_id:{
       type:String
+    },
+    views:{
+      type:Number,
+      default:0
     }
   },
   { timestamps: true }

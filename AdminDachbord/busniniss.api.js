@@ -96,7 +96,7 @@ async function getTopProducts(storeSlug) {
       productId = parts[productIndex + 1];
     }
 
-    const product = await Item.findById(productId).select("name"); 
+    const product = await Item.findById(productId).select("name");
     if (product) {
       topProducts.push({
         name: product.name,
@@ -167,7 +167,6 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
-
 export const getMyBussnises = async (req, res) => {
   try {
     const bussnises = await Bussnise.find({
@@ -194,7 +193,7 @@ export const updateMyBussnise = async (req, res) => {
       location,
       exchangerate,
       instaLink,
-      fecbookLink
+      fecbookLink,
     } = req.body;
     console.log(req.body);
     const locationData = location
@@ -219,8 +218,8 @@ export const updateMyBussnise = async (req, res) => {
         slug: slugify(name, { lower: true }),
         ...(locationData && { location: locationData }),
         exchangerate,
-      instaLink,
-      fecbookLink
+        instaLink,
+        fecbookLink,
       },
       { new: true },
     );

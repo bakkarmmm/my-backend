@@ -60,6 +60,7 @@ export const UpdateCategorie = async (req, res) => {
       { new: true },
     );
     res.status(200).json("succifulley  update!");
+    
   } catch (error) {
     res.status(400).json({ error: error });
   }

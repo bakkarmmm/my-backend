@@ -13,7 +13,13 @@ router.get("/item/:id", async (req, res) => {
         select: "name",
       })
       .populate({ path: "bussnins_id", select: "contact theme slug" });
+    await Item.findByIdAndUpdate(
+      id,
+      { $set: { views : item.views + 1 } },
+      { new: true },
+    )
     if (!item) return res.status(404).json({ message: "Item not found" });
+    // console.log(item)
     res.json(item);
   } catch (error) {
     res.status(500).json(error);
@@ -55,7 +61,7 @@ router.get("/:resturantSlug", async (req, res) => {
     const items = await Item.find({ bussnins_id: resturant._id }).populate({
       path: "gategoryID",
       select: "name",
-    });
+    }).sort({views: -1});
     const itemsMap = {};
     items.forEach((item) => {
       const catId = item.gategoryID._id.toString();
