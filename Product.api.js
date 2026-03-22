@@ -7,17 +7,19 @@ const router = express.Router();
 router.get("/item/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const item = await Item.findById(id)
+    const item = await Item.findByIdAndUpdate(id,
+      { $inc: { views: 1 } },
+      { new: true },)
       .populate({
         path: "gategoryID",
         select: "name",
       })
       .populate({ path: "bussnins_id", select: "contact theme slug" });
-    await Item.findByIdAndUpdate(
-      id,
-      { $set: { views : item.views + 1 } },
-      { new: true },
-    )
+    // await Item.findByIdAndUpdate(
+    //   id,
+    //   { $inc: { views: 1 } },
+    //   { new: true },
+    // );
     if (!item) return res.status(404).json({ message: "Item not found" });
     // console.log(item)
     res.json(item);
@@ -58,10 +60,12 @@ router.get("/:resturantSlug", async (req, res) => {
   const { resturantSlug } = req.params;
   try {
     const resturant = await Busninss.findOne({ slug: resturantSlug });
-    const items = await Item.find({ bussnins_id: resturant._id }).populate({
-      path: "gategoryID",
-      select: "name",
-    }).sort({views: -1});
+    const items = await Item.find({ bussnins_id: resturant._id })
+      .populate({
+        path: "gategoryID",
+        select: "name",
+      })
+      .sort({ views: -1 });
     const itemsMap = {};
     items.forEach((item) => {
       const catId = item.gategoryID._id.toString();
@@ -178,7 +182,7 @@ router.get("/info/allInfo", async (req, res) => {
       path: "type",
       select: "name",
     });
-    res.json(store)
+    res.json(store);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -187,8 +191,11 @@ router.get("/all/categorys", async (req, res) => {
   try {
     const { restaurantSlug } = req.query;
     const store = await Busninss.findOne({ slug: restaurantSlug });
-    const categories = await Category.find({bussninsId:store._id,isActive:true}).sort({order:1})
-    res.json(categories)
+    const categories = await Category.find({
+      bussninsId: store._id,
+      isActive: true,
+    }).sort({ order: 1 });
+    res.json(categories);
   } catch (err) {
     res.status(500).json(err);
   }

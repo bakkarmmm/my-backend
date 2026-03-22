@@ -381,7 +381,9 @@ export const StoreViews = async (req, res) => {
     });
     console.log(bussnises.slug);
     const views = await getStoreViewsDaily(bussnises.slug);
-    const Top5 = await getTopProducts(bussnises.slug);
+    const Top5 = await Item.find({bussnins_id:bussnises._id})
+      .sort({ views: -1 }) 
+      .limit(5).select("name views");
     const whatssapEvents = await getWhatsAppClicks(bussnises.slug);
     res.json({ views, Top5, whatssapEvents });
   } catch (error) {

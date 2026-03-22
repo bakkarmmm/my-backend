@@ -57,7 +57,7 @@ export const getProducts = async (req, res) => {
   const onwerID = req.user.id;
   try {
     const bussnines = await Busninss.findOne({ bussnisOwner: onwerID });
-    const item = await Item.find({ bussnins_id: bussnines._id });
+    const item = await Item.find({ bussnins_id: bussnines._id }).sort({views:-1});
     res.status(200).json({ items: item });
   } catch (error) {}
 };
