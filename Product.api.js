@@ -176,6 +176,7 @@ router.get("/items/search", async (req, res) => {
   }
 });
 router.get("/info/allInfo", async (req, res) => {
+  console.log("ok")
   try {
     const { restaurantSlug } = req.query;
     const store = await Busninss.findOne({ slug: restaurantSlug }).populate({

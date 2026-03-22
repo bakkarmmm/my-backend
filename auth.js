@@ -66,7 +66,7 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       phone,
       role: "bussnisOwner", 
-      isActive: false,
+      isActive: true,
     });
 
     
