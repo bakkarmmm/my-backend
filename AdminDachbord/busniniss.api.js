@@ -233,6 +233,9 @@ export const updateMyBussnise = async (req, res) => {
       data: updated,
     });
   } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.slug) {
+    return res.status(400).json({ message: "business_exists" });
+  }
     res.status(500).json({ message: err.message });
   }
 };
@@ -329,8 +332,11 @@ export const registerBussniseFree = async (req, res) => {
   console.log(req.body);
   try {
     const { name, type, contact } = req.body;
-    
     console.log(req.body);
+    const bussniseRegister = await Bussnise.findOne({ name: name });
+    if (bussniseRegister) {
+      return res.status(400).json({ message: "bussnise is Registred Please Enter new Name" });
+    }
     const newBussnise = new Bussnise({
       name: name,
       bussnisOwner: req.user.id,
@@ -399,6 +405,11 @@ export const registerBussniseFree = async (req, res) => {
       "your business registered successfully please contact admin to activate it",
     );
   } catch (error) {
+    if (error.code === 11000) {
+    return res.status(400).json({
+      message: "business_exists"
+    });
+  }
     res.status(500).json({ message: error.message });
     console.log(error);
   }

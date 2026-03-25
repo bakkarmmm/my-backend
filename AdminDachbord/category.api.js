@@ -43,6 +43,11 @@ export const insertCategorie = async (req, res) => {
     });
     res.status(200).json("insert succuffully");
   } catch (error) {
+     if (error.code === 11000) {
+      return res.status(400).json({
+        message: "category_exists"
+      });
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -62,6 +67,11 @@ export const UpdateCategorie = async (req, res) => {
     res.status(200).json("succifulley  update!");
     
   } catch (error) {
+     if (error.code === 11000) {
+      return res.status(400).json({
+        message: "category_exists"
+      });
+    }
     res.status(400).json({ error: error });
   }
 };

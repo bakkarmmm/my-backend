@@ -9,17 +9,12 @@ const itemSchema = new mongoose.Schema(
   {
     src: { type: String, required: true },
     name: { type: String, required: true },
-    price: { type: Number, required: true }, // تأكد من تحويل السعر Number عند الإدخال
+    price: { type: Number, required: true, min: 0 },
     discription: { type: String },
-
-    // الحقل القديم (مثلاً رقم أو اسم) – خليه بشكل مؤقت أثناء المايغريشن
-    // gategory: { type: Number, required: true },
-
-    // الحقل الجديد لربط الـ Item بالـ Category عن طريق ObjectId
     gategoryID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: false, // خليه optional أثناء المايغريشن، بعدين تقدر تخليه required
+      required: true,
     },
     subDisc: [subDiscSchema],
     ResturantSlug: { type: String },
@@ -28,27 +23,27 @@ const itemSchema = new mongoose.Schema(
       ref: "Bussnise",
       required: false,
     },
-    isActive:{
+    isActive: {
       type: Boolean,
-      required:true,
-      default:true,
+      required: true,
+      default: true,
     },
-    avalible:{
+    avalible: {
       type: Boolean,
-      required:true,
-      default:true,
+      required: true,
+      default: true,
     },
-    public_id:{
-      type:String
+    public_id: {
+      type: String,
     },
-    views:{
-      type:Number,
-      default:0
-    }
+    views: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true }
-); // يحفظ createdAt و updatedAt تلقائياً
+  { timestamps: true },
+);
 
 const Item = mongoose.model("Item", itemSchema);
-
+itemSchema.index({ name: 1, bussnins_id: 1 }, { unique: true });
 export default Item;

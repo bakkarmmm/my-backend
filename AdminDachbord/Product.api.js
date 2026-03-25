@@ -24,13 +24,21 @@ export const inserProudcts = async (req, res) => {
       id: index + 1,
       text,
     }));
-
+    
     const bussnins = await Busninss.findOne({ bussnisOwner: onwerID });
 
     if (!bussnins) {
       return res
         .status(404)
         .json({ message: "Business not found for this user" });
+    }
+    const existingProduct = await Item.findOne({
+      name,
+      bussnins_id: bussnins._id,
+    });
+
+    if (existingProduct) {
+      return res.status(400).json({ message: "product_exists" });
     }
 
     const product = new Item({
@@ -49,6 +57,12 @@ export const inserProudcts = async (req, res) => {
 
     res.status(201).json(product);
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "product_exists",
+      });
+    }
+
     console.log("INSERT PRODUCT ERROR:", error);
     res.status(500).json({ error: error.message });
   }
@@ -57,7 +71,9 @@ export const getProducts = async (req, res) => {
   const onwerID = req.user.id;
   try {
     const bussnines = await Busninss.findOne({ bussnisOwner: onwerID });
-    const item = await Item.find({ bussnins_id: bussnines._id }).sort({views:-1});
+    const item = await Item.find({ bussnins_id: bussnines._id }).sort({
+      views: -1,
+    });
     res.status(200).json({ items: item });
   } catch (error) {}
 };
@@ -93,10 +109,7 @@ export const update = async (req, res) => {
     if (!id) {
       return res.status(404).json("ID Product not found");
     }
-
     const { name, price, categoriesId, disc, image, public_id } = req.body;
-
-    // ✅ جيب المنتج القديم
     const product = await Item.findById(id);
 
     if (!product) {
@@ -113,7 +126,15 @@ export const update = async (req, res) => {
       id: index + 1,
       text,
     }));
+    const existingProduct = await Item.findOne({
+      name,
+      bussnins_id: product.bussnins_id,
+      _id: { $ne: id },
+    });
 
+    if (existingProduct) {
+      return res.status(400).json({ message: "product_exists" });
+    }
     const updateData = {
       name,
       price,
@@ -141,6 +162,11 @@ export const update = async (req, res) => {
 
     return res.json(updated);
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "product_exists",
+      });
+    }
     console.log(error);
     res.status(400).json({ error });
   }
