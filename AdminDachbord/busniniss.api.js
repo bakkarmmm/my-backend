@@ -325,6 +325,84 @@ export const registerBussnise = async (req, res) => {
     console.log(error);
   }
 };
+export const registerBussniseFree = async (req, res) => {
+  console.log(req.body);
+  try {
+    const { name, type, contact } = req.body;
+    
+    console.log(req.body);
+    const newBussnise = new Bussnise({
+      name: name,
+      bussnisOwner: req.user.id,
+      slug: slugify(name, { lower: true }),
+      type: type,
+      contact: contact,
+    });
+    await newBussnise.save();
+    const selectedPlan = await Plans.findOne({ isDefault: true });
+    if (!selectedPlan) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
+    console.log(newBussnise);
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+    const newSubscription = new Subscription({
+      busId: newBussnise._id,
+      planId: selectedPlan._id,
+      startDate,
+      endDate,
+      paidAmount: selectedPlan.price,
+      status: "pending",
+    });
+    console.log("Before saving subscription:", newSubscription);
+    try {
+      await newSubscription.save();
+      console.log("Subscription saved successfully:", newSubscription);
+    } catch (subError) {
+      console.error("Error saving subscription:", subError);
+      return res.status(500).json({
+        message: "Failed to save subscription",
+        error: subError.message,
+      });
+    }
+    const exist = await Paymant.findOne({
+      subsId: newSubscription._id,
+      status: "PENDING",
+    });
+
+    if (exist) {
+      return res.status(400).json({
+        message: "There is already a pending payment for this subscription",
+      });
+    }
+    console.log(newSubscription);
+    const newPaymant = new Paymant({
+      bussninsId: newBussnise._id,
+      subsId: newSubscription._id,
+      receiptImage: "",
+      status: "PENDING",
+      amount: 0,
+    });
+    console.log("Before saving payment:", newPaymant);
+    try {
+      await newPaymant.save();
+      console.log("Payment saved successfully:", newPaymant);
+    } catch (saveError) {
+      console.error("Error saving payment:", saveError);
+      return res
+        .status(500)
+        .json({ message: "Failed to save payment", error: saveError.message });
+    }
+    console.log(newPaymant);
+    res.json(
+      "your business registered successfully please contact admin to activate it",
+    );
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    console.log(error);
+  }
+};
 export const checkMyBussnise = async (req, res) => {
   try {
     const bussnise = await Bussnise.findOne({
@@ -397,5 +475,6 @@ router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
 // router.post("/addBussnise", protect, upload.single("image"), registerBussnise);
 router.post("/addBussnise", protect, upload.none(), registerBussnise);
+router.post("/addBussniseFree", protect, upload.none(), registerBussniseFree);
 router.get("/store-views", protect, StoreViews);
 export default router;
