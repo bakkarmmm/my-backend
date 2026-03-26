@@ -92,6 +92,21 @@ export const update = async (req, res) => {
     res.status(400).json(error);
   }
 };
+export const getOwners =  async(req,res)=>{
+  try {
+    const { name } = req.query;
+    const query = name
+      ? { name: { $regex: name, $options: "i" } } 
+      : {};
+
+    const users = await User.find(query).select("name");
+
+    res.json(users);
+  } catch (error) {
+    res.status(504).json(error)
+  }
+}
+router.get("/owners", protect, getOwners);
 router.get("/allowners", protect, getAllOwner);
 router.get("/userswithBusiness", protect, getAllownerBussnines);
 router.post("/addnewOwner", protect, adduser);

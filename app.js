@@ -20,6 +20,7 @@ import paymanUsertApi from './AdminDachbord/Payment.api.js'
 import PromoApi from './AdminDachbord/Promo.api.js';
 import { expireSubscriptionsJob } from "./utils/cronJobs.js";
 import  notificationApi  from "./AdminDachbord/notification.js";
+import  gerneraleNotificationsApi  from "./subAdminDachboard/notificaton.js";
 expireSubscriptionsJob();
 app.use("/notifications",notificationApi)
 app.use("/auth",LoginApi)
@@ -36,6 +37,7 @@ app.use("/subscription",subscApi);
 app.use("/paymantes",paymantsApi);
 app.use("/users",UsersApi)
 app.use("/payment",paymanUsertApi)
+app.use("/adminNotifiations",gerneraleNotificationsApi)
 app.use('/uploads', express.static('uploads'));
 
 export default app;

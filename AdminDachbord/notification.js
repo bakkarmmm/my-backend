@@ -7,7 +7,10 @@ const router = express.Router();
 export const notification = async (req, res) => {
   // console.log("errorrrrrrrrr")
   try {
-    const notifications = await Notification.find({ userId: req.user.id })
+    const notifications = await Notification.find({ $or: [
+    { userId: req.user.id },  // إشعارات المستخدم
+    { isGlobal: true }        // إشعارات عامة
+  ] })
       .sort({ createdAt: -1 })
       .limit(50); // آخر 50 إشعار
     res.json(notifications);
