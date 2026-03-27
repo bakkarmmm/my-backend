@@ -11,6 +11,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 export const inserProudcts = async (req, res) => {
   try {
+    console.log(req.body)
     const onwerID = req.user.id;
     const { name, price, categoriesId, disc, image, public_id } = req.body;
 

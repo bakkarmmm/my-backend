@@ -7,9 +7,11 @@ const router = express.Router();
 router.get("/item/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const item = await Item.findByIdAndUpdate(id,
+    const item = await Item.findByIdAndUpdate(
+      id,
       { $inc: { views: 1 } },
-      { new: true },)
+      { new: true },
+    )
       .populate({
         path: "gategoryID",
         select: "name",
@@ -60,42 +62,48 @@ router.get("/:resturantSlug", async (req, res) => {
   const { resturantSlug } = req.params;
   try {
     const resturant = await Busninss.findOne({ slug: resturantSlug });
-    const items = await Item.find({ bussnins_id: resturant._id })
-      .populate({
-        path: "gategoryID",
-        select: "name",
-      })
-      .sort({ views: -1 });
-    const itemsMap = {};
-    items.forEach((item) => {
-      const catId = item.gategoryID._id.toString();
-      if (!itemsMap[catId]) itemsMap[catId] = [];
-      if (itemsMap[catId].length < 5) itemsMap[catId].push(item);
-    });
+    if (!resturant)
+      return res.status(404).json({ message: "Restaurant not found" });
 
-    // ترتيب menu حسب الفئة، مع الحفاظ على نفس الحقل menu
-    const menu = [];
-    Object.values(itemsMap).forEach((itemsArr) => {
-      menu.push(...itemsArr); // نضع كل المنتجات المحدودة ضمن القائمة
-    });
+    const items = await Item.aggregate([
+      { $match: { bussnins_id: resturant._id } },
+      { $sort: { views: -1 } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "gategoryID",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      { $unwind: "$category" },
+      { $group: { _id: "$category._id", items: { $push: "$$ROOT" } } },
+      { $project: { items: { $slice: ["$items", 5] } } },
+      { $unwind: "$items" },
+      { $replaceRoot: { newRoot: "$items" } },
+      { $addFields: { gategoryID: "$category" } },
+    ]);
+
     const Promos = await Promo.find({
       bussninsId: resturant._id,
       isActive: true,
     });
-    const categoryIds = Object.keys(itemsMap);
-    const restaurantName = items.length > 0 ? items[0].ResturantSlug : null;
+
+    const categoryIds = items.map((item) => item.gategoryID._id);
     const categories = await Category.find({
       _id: { $in: categoryIds },
       isActive: true,
     }).sort({ order: 1 });
+
     const bussnise = await Busninss.find({ slug: resturantSlug }).populate({
       path: "type",
       select: "name",
     });
+
     res.json({
-      menu: menu,
+      menu: items,
       categris: categories,
-      RestaurantNames: restaurantName,
+      RestaurantNames: resturant.name,
       bussnise: bussnise,
       Promos: Promos,
     });
@@ -176,7 +184,7 @@ router.get("/items/search", async (req, res) => {
   }
 });
 router.get("/info/allInfo", async (req, res) => {
-  console.log("ok")
+  console.log("ok");
   try {
     const { restaurantSlug } = req.query;
     const store = await Busninss.findOne({ slug: restaurantSlug }).populate({
