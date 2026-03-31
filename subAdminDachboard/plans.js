@@ -31,6 +31,7 @@ export const addPlan = async (req, res) => {
   }
 };
 export const UpdatePlan = async (req, res) => {
+  console.log(req.body);
   try {
     const id = req.params.id;
     const { name, price, features } = req.body;
@@ -41,12 +42,12 @@ export const UpdatePlan = async (req, res) => {
     const updateData = {
       name,
       price,
-      lines,
+      features: lines,
     };
     const update = await Plan.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
     res.json("accepted updatet ...");
   } catch (error) {
