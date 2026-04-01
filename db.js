@@ -7,9 +7,6 @@ const mongoURI = process.env.MONGO_URL;
 
 async function connectDB() {
   try {
-    console.log("MONGO_URL:", process.env.MONGO_URL);
-    await mongoose.connect(mongoURI);
-
     console.log("MongoDB connected successfully!");
     console.log("Connected to DB:", mongoose.connection.name);
 
