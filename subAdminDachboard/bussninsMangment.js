@@ -14,6 +14,7 @@ import Item from "../modelus/item.js";
 import Category from "../modelus/Category.js";
 import Users from "../modelus/Users.js";
 import Notification from "../modelus/Notification.js";
+import sendNotification from "../sendNotification.js";
 const router = express.Router();
 
 export const getBussnines = async (req, res) => {
@@ -249,7 +250,8 @@ export const accetedOrRgected = async (req, res) => {
   try {
     const id = req.params.id;
     const status = req.body.status;
-    const businessOwner = await Bussnise.findById(id).select("bussnisOwner");
+    const adminId = await Users.findById(req.user.id).select("name");
+    const businessOwner = await Bussnise.findById(id).select("bussnisOwner contact name");
     const updateb = await Busninss.findByIdAndUpdate(
       id,
       {
@@ -279,6 +281,27 @@ export const accetedOrRgected = async (req, res) => {
     await newNotification.save();
     console.log("done !");
     res.json("is accpeted account ...");
+    if (status === "ACTIVE") {
+      await sendNotification(`
+❌  *Store Accepted*
+
+🏬 ${businessOwner.name}
+📧 ${businessOwner.contact || "Email not specified"}
+👤 Approved by: ${adminId.name}
+⚡ Status: ${businessOwner.status}
+🕒 Time: ${new Date().toLocaleString()}
+`);
+    } else {
+      await sendNotification(`
+✅ *Store rejected*
+
+🏬 ${businessOwner.name}
+📧 ${businessOwner.contact || "Email not specified"}
+👤 Approved by: ${adminId.name}
+⚡ Status: ${businessOwner.status}
+🕒 Time: ${new Date().toLocaleString()}
+`);
+    }
   } catch (error) {
     res.status(500).json(error);
   }

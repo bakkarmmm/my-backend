@@ -12,6 +12,7 @@ import Plans from "../modelus/Plans.js";
 import Category from "../modelus/Category.js";
 import Item from "../modelus/item.js";
 import Promo from "../modelus/Promo.js";
+import sendNotification from "../sendNotification.js";
 
 dotenv.config();
 const router = express.Router();
@@ -234,8 +235,8 @@ export const updateMyBussnise = async (req, res) => {
     });
   } catch (err) {
     if (err.code === 11000 && err.keyPattern?.slug) {
-    return res.status(400).json({ message: "business_exists" });
-  }
+      return res.status(400).json({ message: "business_exists" });
+    }
     res.status(500).json({ message: err.message });
   }
 };
@@ -335,7 +336,9 @@ export const registerBussniseFree = async (req, res) => {
     console.log(req.body);
     const bussniseRegister = await Bussnise.findOne({ name: name });
     if (bussniseRegister) {
-      return res.status(400).json({ message: "bussnise is Registred Please Enter new Name" });
+      return res
+        .status(400)
+        .json({ message: "bussnise is Registred Please Enter new Name" });
     }
     const newBussnise = new Bussnise({
       name: name,
@@ -404,12 +407,20 @@ export const registerBussniseFree = async (req, res) => {
     res.json(
       "your business registered successfully please contact admin to activate it",
     );
+    await sendNotification(`
+    🆕 *New Store Registered*
+
+🏬 ${newBussnise.name}
+📍 ${newBussnise.location || "Location not specified"}
+📧 ${newBussnise.contact || "Email not specified"}
+⚡ Status: ${newBussnise.status}
+`);
   } catch (error) {
     if (error.code === 11000) {
-    return res.status(400).json({
-      message: "business_exists"
-    });
-  }
+      return res.status(400).json({
+        message: "business_exists",
+      });
+    }
     res.status(500).json({ message: error.message });
     console.log(error);
   }
@@ -470,9 +481,10 @@ export const StoreViews = async (req, res) => {
     });
     console.log(bussnises.slug);
     const views = await getStoreViewsDaily(bussnises.slug);
-    const Top5 = await Item.find({bussnins_id:bussnises._id})
-      .sort({ views: -1 }) 
-      .limit(5).select("name views");
+    const Top5 = await Item.find({ bussnins_id: bussnises._id })
+      .sort({ views: -1 })
+      .limit(5)
+      .select("name views");
     const whatssapEvents = await getWhatsAppClicks(bussnises.slug);
     res.json({ views, Top5, whatssapEvents });
   } catch (error) {

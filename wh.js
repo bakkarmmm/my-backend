@@ -1,6 +1,8 @@
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
 
+import sendNotification from "./sendNotification.js";
+
 // export default function Notifications({ token }) {
 //   const [notifications, setNotifications] = useState([]);
 
@@ -52,3 +54,4 @@
 // const categories = await Category
 //   .find({ bussninsId: bussniseId })
 //   .sort({ order: 1 });
+sendNotification("hello")
