@@ -3,6 +3,7 @@ import { protect } from "../midlware/auth.js";
 import Users from "../modelus/Users.js";
 import Busninss from "../modelus/Busninss.js";
 import Paymant from "../modelus/Paymant.js";
+import sendNotification from "../sendNotification.js";
 const router = express.Router();
 
 export const getPayment = async (req, res) => {
@@ -21,6 +22,7 @@ export const getPayment = async (req, res) => {
       .populate({ path: "requestedPlanId", select: "name" });
     console.log(PaymanetHistory);
     res.json(PaymanetHistory);
+    
   } catch (error) {
     res.status(500).json(error);
   }

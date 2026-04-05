@@ -247,11 +247,14 @@ export const updateBussnise = async (req, res) => {
   }
 };
 export const accetedOrRgected = async (req, res) => {
+  console.log(req.body.status);
   try {
     const id = req.params.id;
     const status = req.body.status;
     const adminId = await Users.findById(req.user.id).select("name");
-    const businessOwner = await Bussnise.findById(id).select("bussnisOwner contact name");
+    const businessOwner = await Bussnise.findById(id).select(
+      "bussnisOwner contact name",
+    );
     const updateb = await Busninss.findByIdAndUpdate(
       id,
       {
@@ -283,22 +286,22 @@ export const accetedOrRgected = async (req, res) => {
     res.json("is accpeted account ...");
     if (status === "ACTIVE") {
       await sendNotification(`
-❌  *Store Accepted*
+✅  *Store Accepted*
 
 🏬 ${businessOwner.name}
 📧 ${businessOwner.contact || "Email not specified"}
 👤 Approved by: ${adminId.name}
-⚡ Status: ${businessOwner.status}
+⚡ Status: ${updatedBusiness.status}
 🕒 Time: ${new Date().toLocaleString()}
 `);
     } else {
       await sendNotification(`
-✅ *Store rejected*
+❌ *Store rejected*
 
 🏬 ${businessOwner.name}
 📧 ${businessOwner.contact || "Email not specified"}
 👤 Approved by: ${adminId.name}
-⚡ Status: ${businessOwner.status}
+⚡ Status: ${updatedBusiness.status}
 🕒 Time: ${new Date().toLocaleString()}
 `);
     }
@@ -309,7 +312,6 @@ export const accetedOrRgected = async (req, res) => {
 export const GenraleInforamtion = async (req, res) => {
   try {
     const now = new Date();
-
     const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);

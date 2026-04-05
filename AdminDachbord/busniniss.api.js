@@ -411,7 +411,6 @@ export const registerBussniseFree = async (req, res) => {
     🆕 *New Store Registered*
 
 🏬 ${newBussnise.name}
-📍 ${newBussnise.location || "Location not specified"}
 📧 ${newBussnise.contact || "Email not specified"}
 ⚡ Status: ${newBussnise.status}
 `);

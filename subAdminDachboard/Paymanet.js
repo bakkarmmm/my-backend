@@ -5,6 +5,8 @@ import Paymant from "../modelus/Paymant.js";
 import Busninss from "../modelus/Busninss.js";
 import Subscription from "../modelus/Subscription.js";
 import Notification from "../modelus/Notification.js";
+import sendNotification from "../sendNotification.js";
+import Users from "../modelus/Users.js";
 
 const router = express.Router();
 
@@ -30,11 +32,11 @@ export const getPaymanets = async (req, res) => {
 };
 export const accepted = async (req, res) => {
   try {
-    console.log("ok");
     const { bussninsId, subsId, Payid } = req.body;
-    const businessOwner = await Busninss.findById(bussninsId ).select(
-      "bussnisOwner",
-    );
+    const admin = await Users.findById(req.user.id).select("name");
+    const businessOwner = await Busninss.findById(bussninsId)
+      .select("bussnisOwner name phone")
+      .populate("bussnisOwner", "name");
     const updateBussnise = await Busninss.findByIdAndUpdate(
       bussninsId,
       { $set: { status: "ACTIVE" } },
@@ -70,6 +72,24 @@ export const accepted = async (req, res) => {
     };
     const newNotification = new Notification(notification);
     await newNotification.save();
+
+    await sendNotification(`
+✅ *Payment Approved*
+
+━━━━━━━━━━━━━━━
+🏬 Store: ${businessOwner.name}
+👑 Owner: ${businessOwner.bussnisOwner.name}
+📞 ${businessOwner.bussnisOwner.phone || "Not provided"}
+
+💵 Amount: ${updatePaymant.amount}
+📦 Plan: ${subscription.planId.name || "Updated Plan"}
+
+👤 Admin: ${admin.name}
+⚡ Status: ${updateBussnise.status}
+
+🕒 ${new Date().toLocaleString()}
+━━━━━━━━━━━━━━━
+`);
     res.json("is accepted this requeste");
   } catch (error) {
     res.status(500).json(error);
@@ -77,25 +97,26 @@ export const accepted = async (req, res) => {
 };
 export const rejected = async (req, res) => {
   try {
+    const admin = await Users.findById(req.user.id).select("name");
     const { bussninsId, subsId, Payid } = req.body;
-     const businessOwner = await Busninss.findById( bussninsId ).select(
-      "bussnisOwner",
-    );
+    const businessOwner = await Busninss.findById(bussninsId)
+      .select("bussnisOwner name phone")
+      .populate("bussnisOwner", "name");
     // 1️⃣ تحديث حالة الدفع إلى REJECTED
-    await Paymant.findByIdAndUpdate(
+    const updatePaymant =await Paymant.findByIdAndUpdate(
       Payid,
       { $set: { status: "REJECTED" } },
       { new: true },
     );
     const subscription = await Subscription.findById(subsId);
 
-     const now = new Date();
+    const now = new Date();
     if (subscription.endDate < now) {
       // انتهى الاشتراك → وضعه كـ "expired"
       subscription.status = "expired";
       await subscription.save();
     }
-     const notification = {
+    const notification = {
       userId: businessOwner.bussnisOwner,
       type: "rejected ted renew",
       title: "rejected your Payment",
@@ -104,6 +125,23 @@ export const rejected = async (req, res) => {
     };
     const newNotification = new Notification(notification);
     await newNotification.save();
+    await sendNotification(`
+❌ *Payment Rejected*
+
+━━━━━━━━━━━━━━━
+🏬 Store: ${businessOwner.name}
+👑 Owner: ${businessOwner.bussnisOwner.name}
+📞 ${businessOwner.bussnisOwner.phone || "Not provided"}
+
+💵 Amount: ${updatePaymant.amount || 0}
+📦 Plan: ${subscription?.planId?.name || "N/A"}
+
+👤 Admin: ${admin.name}
+⚡ Status: REJECTED
+
+🕒 ${new Date().toLocaleString()}
+━━━━━━━━━━━━━━━
+`);
     res.json({ message: "Payment rejected" });
   } catch (error) {
     res.status(500).json(error);
@@ -111,6 +149,6 @@ export const rejected = async (req, res) => {
 };
 
 router.get("/allPaymants", getPaymanets);
-router.put("/acceptedPaymant", accepted);
-router.put("/rejectedPaymant", rejected);
+router.put("/acceptedPaymant", protect, accepted);
+router.put("/rejectedPaymant", protect, rejected);
 export default router;
