@@ -283,7 +283,7 @@ export const accetedOrRgected = async (req, res) => {
     const newNotification = new Notification(notification);
     await newNotification.save();
     console.log("done !");
-    res.json("is accpeted account ...");
+   
     if (status === "ACTIVE") {
       await sendNotification(`
 ✅  *Store Accepted*
@@ -291,9 +291,10 @@ export const accetedOrRgected = async (req, res) => {
 🏬 ${businessOwner.name}
 📧 ${businessOwner.contact || "Email not specified"}
 👤 Approved by: ${adminId.name}
-⚡ Status: ${updatedBusiness.status}
+⚡ Status: ${updateb.status}
 🕒 Time: ${new Date().toLocaleString()}
 `);
+res.json("is accpeted account ...");
     } else {
       await sendNotification(`
 ❌ *Store rejected*
@@ -301,9 +302,11 @@ export const accetedOrRgected = async (req, res) => {
 🏬 ${businessOwner.name}
 📧 ${businessOwner.contact || "Email not specified"}
 👤 Approved by: ${adminId.name}
-⚡ Status: ${updatedBusiness.status}
+⚡ Status: ${updateb.status}
 🕒 Time: ${new Date().toLocaleString()}
 `);
+res.json("is rejected account ...");
+ 
     }
   } catch (error) {
     res.status(500).json(error);

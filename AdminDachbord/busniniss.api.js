@@ -210,7 +210,7 @@ export const updateMyBussnise = async (req, res) => {
         type,
         disc,
         contact,
-        address,
+        adrres:address,
         theme: color,
         openTime: openTime,
         closeTime: closedTime,
