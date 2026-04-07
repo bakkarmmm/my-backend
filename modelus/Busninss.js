@@ -62,7 +62,7 @@ const bussnisSchema = new mongoose.Schema(
     theme: {
       type: String,
       required: true,
-      default: "#00A63E",
+      default: "#4F39F6",
     },
     openTime: { type: String, default: "09:00" },
     closeTime: { type: String, default: "18:00" },
