@@ -23,7 +23,7 @@ export const getPaymanets = async (req, res) => {
         select: "paidAmount",
         populate: { path: "planId", select: "name" },
       })
-      .populate({ path: "requestedPlanId", select: "name price" });
+      .populate({ path: "requestedPlanId", select: "name price" }).sort({ createdAt: -1 });
     res.json(all);
     console.log(all);
   } catch (error) {

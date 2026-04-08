@@ -37,7 +37,7 @@ export const getBussnines = async (req, res) => {
       .populate({
         path: "payment",
         select: "status receiptImage createdAt",
-      });
+      }).sort({ createdAt: -1 });;
 
     console.log(data);
     res.json(data);
@@ -434,11 +434,10 @@ export const BusinessGrowth = async (req, res) => {
     const now = new Date();
     const startYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-    // Aggregation: نحسب عدد البزنس المنشأة كل شهر
     const growth = await Bussnise.aggregate([
       {
         $match: {
-          createdAt: { $gte: startYear }, // آخر 12 شهر
+          createdAt: { $gte: startYear },
         },
       },
       {

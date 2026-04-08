@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "./modelus/Users.js";
 import sendNotification from "./sendNotification.js";
+import sendNotificationUsers from "./sendUserNotifications.js";
 
 const router = express.Router();
 
@@ -41,6 +42,16 @@ router.post("/login", async (req, res) => {
   if (user.role === "admin") {
     await sendNotification(`
 🚀 *Admin Login*
+
+👤 Name: ${user.name}
+🕒 Time: ${new Date().toLocaleString()}
+
+✅ Status: Success
+`);
+  }
+  if (user.role === "bussnisOwner") {
+    await sendNotificationUsers(`
+🚀 *User Login*
 
 👤 Name: ${user.name}
 🕒 Time: ${new Date().toLocaleString()}
