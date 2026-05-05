@@ -178,6 +178,16 @@ export const getMyBussnises = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+export const getMyBussnisesforapp = async (req, res) => {
+  try {
+    const bussnises = await Bussnise.findOne({
+      bussnisOwner: req.user.id, // ✅ من JWT
+    }).populate({ path: "type", strictPopulate: false });
+    res.json(bussnises);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 export const updateMyBussnise = async (req, res) => {
   try {
     const {
@@ -492,6 +502,7 @@ export const StoreViews = async (req, res) => {
   }
 };
 router.get("/dachboard/my", protect, getMyBussnises);
+router.get("/me", protect, getMyBussnisesforapp);
 router.get("/GeneraleInfo", protect, GenraleInfo);
 router.put("/update", protect, updateMyBussnise);
 router.get("/check", protect, checkMyBussnise);
