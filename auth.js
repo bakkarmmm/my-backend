@@ -8,7 +8,7 @@ import sendNotificationUsers from "./sendUserNotifications.js";
 
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => { 
   const { Username, password } = req.body;
   // const user = await User.findOne({ name: Username ,isActive:true}).select("+password");
   const user = await User.findOne({ name: Username }).select("+password");
@@ -69,7 +69,7 @@ router.post("/register", async (req, res) => {
         message: "Name and password are required",
       });
     }
-
+ 
     const existingUser = await User.findOne({ name: Username });
     if (existingUser) {
       return res.status(409).json({

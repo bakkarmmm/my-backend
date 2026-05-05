@@ -443,7 +443,7 @@ export const checkMyBussnise = async (req, res) => {
     res.json({
       hasBusiness: true,
       status: bussnise.status, // ACTIVE | PENDING | REJECTED
-      subscriptionStatus,
+      subscriptionStatus, // ["active","expired","canceled","pending"],
       businessId: bussnise._id,
     });
   } catch (error) {

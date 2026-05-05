@@ -45,10 +45,14 @@ export const getOwnerSubscription = async (req, res) => {
   }
 };
 export const revuveSubsc = async (req, res) => {
-  console.log("OK");
+  
   try {
-    const { PlanId, busId } = req.body;
-    const receiptImage = req.file?.filename;
+    console.log(req.body);
+    const { PlanId, busId,receiptImage } = req.body || {};
+    console.log(PlanId);
+    console.log(busId);
+    console.log(receiptImage);
+    // const receiptImage = req.file?.filename;
     const pendingRenew = await paymant.findOne({
       busId,
       status: "PENDING",
@@ -97,11 +101,12 @@ export const revuveSubsc = async (req, res) => {
 ━━━━━━━━━━━━━━━
 `);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" })
+    console.log(error)
   }
 };
 
 router.get("/ownerSubsc", protect, getOwnerSubscription);
-router.post("/renew", upload.single("image"), protect, revuveSubsc);
+router.post("/renew", protect, revuveSubsc);
 
 export default router;

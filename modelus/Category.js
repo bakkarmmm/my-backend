@@ -14,7 +14,7 @@ const categorySchema = new mongoose.Schema(
   },
 
   { timestamps: true },
-); // يحفظ createdAt و updatedAt تلقائيًا
+); 
 
 const Category = mongoose.model("Category", categorySchema);
 categorySchema.index(

@@ -23,10 +23,10 @@ import  notificationApi  from "./AdminDachbord/notification.js";
 import  gerneraleNotificationsApi  from "./subAdminDachboard/notificaton.js";
 expireSubscriptionsJob();
 app.use("/notifications",notificationApi)
-app.use("/auth",LoginApi)
-app.use("/dachboard",Dachbordapi)
-app.use("/products",productApi)
-app.use("/types",TypesApi)
+app.use("/auth",LoginApi);
+app.use("/dachboard",Dachbordapi);
+app.use("/products",productApi);
+app.use("/types",TypesApi);
 app.use("/Promo",PromoApi);
 app.use("/categories",CategoryApi)
 app.use("/productsbussnins",bussninsProductApi)

@@ -12,7 +12,6 @@ export const getPromo = async (req, res) => {
     const owneriD = req.user.id;
     const bussise = await Busninss.findOne({ bussnisOwner: owneriD });
     const GetPromo = await Promo.find({ bussninsId: bussise._id });
-    // console.log(GetPromo)
     res.json(GetPromo);
   } catch (error) {
     res.status(501).json(error);

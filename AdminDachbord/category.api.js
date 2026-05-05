@@ -26,7 +26,6 @@ export const getCtegories = async (req, res) => {
 export const insertCategorie = async (req, res) => {
   const { name } = req.body;
   const owner_id = req.user.id;
-
   try {
     const bussnise = await Busninss.findOne({ bussnisOwner: owner_id });
     if (!bussnise) {
@@ -36,7 +35,7 @@ export const insertCategorie = async (req, res) => {
       bussninsId: bussnise._id,
     }).sort({ order: -1 });
     const newOrder = lastCategory ? lastCategory.order + 1 : 1;
-    const newCategorie = Category.create({
+    const newCategorie = await Category.create({
       name,
       bussninsId: bussnise._id,
       order: newOrder,

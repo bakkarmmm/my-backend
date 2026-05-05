@@ -7,7 +7,6 @@ import sendNotification from "../sendNotification.js";
 const router = express.Router();
 
 export const getPayment = async (req, res) => {
-  console.log("ok");
   try {
     const busnisse = await Busninss.find({ bussnisOwner: req.user.id }).select(
       "_id",
