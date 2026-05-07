@@ -497,7 +497,7 @@ export const StoreViews = async (req, res) => {
     const whatssapEvents = await getWhatsAppClicks(bussnises.slug);
     res.json({ views, Top5, whatssapEvents });
   } catch (error) {
-    console.error("🔥 BACKEND ERROR:", error); // 👈 مهم جداً
+    console.error("🔥 BACKEND ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };

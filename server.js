@@ -9,11 +9,17 @@ console.log("Using ENV file:", envFile);
 import app from "./app.js";
 import "./db.js"; // just to connect to MongoDB
 import { v2 as cloudinary } from "cloudinary";
+import {
+  expireSubscriptionsJob,
+  subscriptionReminderJob,
+} from "./utils/cronJobs.js";
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
   api_secret: process.env.CLOUD_API_SECRET,
 });
+expireSubscriptionsJob();
+subscriptionReminderJob();
 // console.log(process.env.JWT_SECRET);
 app.listen(3000, () => {
   console.log("server running on port 3000");
