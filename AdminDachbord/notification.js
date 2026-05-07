@@ -32,7 +32,7 @@ export const ReadNotifaciton = async (req, res) => {
     console.log(err)
   }
 };
-router.get(" ", protect, notification);
+router.get("/Getnotifications", protect, notification);
 router.put("/read/:id", protect, ReadNotifaciton);
 // router.put("/UpdateUser", protect, updateUserInforamtion);
 export default router;
