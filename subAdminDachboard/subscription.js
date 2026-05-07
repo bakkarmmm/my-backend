@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 const router = express.Router();
 
@@ -83,7 +83,7 @@ export const revuveSubsc = async (req, res) => {
     console.log("OK5");
     await newPaymant.save();
     console.log(newPaymant);
-    res.json("is accepted please await for court time");
+   
     const business = await Busninss.findById(busId).select("name");
     await sendNotification(`
 💲 *New Payment Alert*
@@ -100,6 +100,7 @@ export const revuveSubsc = async (req, res) => {
 🕒 ${new Date().toLocaleString()}
 ━━━━━━━━━━━━━━━
 `);
+ res.json("is accepted please await for court time");
   } catch (error) {
     res.status(500).json({ message: "Server error" })
     console.log(error)

@@ -36,7 +36,7 @@ export const accepted = async (req, res) => {
     const admin = await Users.findById(req.user.id).select("name");
     const businessOwner = await Busninss.findById(bussninsId)
       .select("bussnisOwner name phone")
-      .populate("bussnisOwner", "name");
+      .populate("bussnisOwner", "name phone");
     const updateBussnise = await Busninss.findByIdAndUpdate(
       bussninsId,
       { $set: { status: "ACTIVE" } },
@@ -101,7 +101,7 @@ export const rejected = async (req, res) => {
     const { bussninsId, subsId, Payid } = req.body;
     const businessOwner = await Busninss.findById(bussninsId)
       .select("bussnisOwner name phone")
-      .populate("bussnisOwner", "name");
+      .populate("bussnisOwner", "name phone");
     // 1️⃣ تحديث حالة الدفع إلى REJECTED
     const updatePaymant =await Paymant.findByIdAndUpdate(
       Payid,
